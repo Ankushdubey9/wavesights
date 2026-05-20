@@ -1,11 +1,9 @@
-
 import { useState } from "react";
- import Confetti from "react-confetti";
+import Confetti from "react-confetti";
 const interest = localStorage.getItem("interest");
 const goal = localStorage.getItem("goal");
 const skillLevel = localStorage.getItem("skillLevel");
 const timeCommitment = localStorage.getItem("timeCommitment");
-
 
 import roadmapData from "../data/roadmapData";
 
@@ -334,7 +332,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[#020817] text-white flex">
       {/* Sidebar */}
-      <aside className="w-72 border-r border-white/10 bg-black/20 backdrop-blur-xl p-6 hidden md:block">
+      <aside className="hidden md:flex w-72 min-h-screen border-r border-white/10 bg-black/20 backdrop-blur-xl p-6 flex-col">
         <h1 className="text-4xl font-black text-cyan-400 mb-10">WaveSights</h1>
 
         <div className="space-y-4">
@@ -365,6 +363,12 @@ export default function Dashboard() {
           </button>
         </div>
       </aside>
+      {/* Mobile Header */}
+      <div className="md:hidden flex items-center justify-between p-5 border-b border-white/10 bg-[#020817]">
+        <h1 className="text-3xl font-black text-cyan-400">WaveSights</h1>
+
+        <button className="text-4xl text-white">☰</button>
+      </div>
 
       {/* Main Content */}
       <main className="flex-1 p-6 md:p-10 overflow-y-auto">
@@ -498,34 +502,27 @@ export default function Dashboard() {
         </section>
 
         {completedSteps.length === selectedRoadmap.length &&
-selectedRoadmap.length > 0 && (
+          selectedRoadmap.length > 0 && (
+            <>
+              <Confetti />
 
-  <>
-  
-    <Confetti />
+              <div className="mt-10 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-3xl p-10 text-center animate-pulse">
+                <h2 className="text-6xl font-black text-cyan-400 mb-6">
+                  🎉 Congratulations 🎉
+                </h2>
 
-    <div className="mt-10 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-3xl p-10 text-center animate-pulse">
+                <div className="text-6xl mb-6">🚀 🌸 🎊 ✨ 🏆</div>
 
-      <h2 className="text-6xl font-black text-cyan-400 mb-6">
-        🎉 Congratulations 🎉
-      </h2>
-
-      <div className="text-6xl mb-6">
-        🚀 🌸 🎊 ✨ 🏆
-      </div>
-
-      <p className="text-2xl text-gray-200 leading-relaxed max-w-3xl mx-auto">
-        You completed your {interest} roadmap successfully!
-        <br /><br />
-        Keep building projects, improving consistency,
-        and moving toward your dream career 🚀
-      </p>
-
-    </div>
-
-  </>
-
-)}
+                <p className="text-2xl text-gray-200 leading-relaxed max-w-3xl mx-auto">
+                  You completed your {interest} roadmap successfully!
+                  <br />
+                  <br />
+                  Keep building projects, improving consistency, and moving
+                  toward your dream career 🚀
+                </p>
+              </div>
+            </>
+          )}
       </main>
     </div>
   );
