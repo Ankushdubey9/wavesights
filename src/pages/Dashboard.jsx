@@ -330,7 +330,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#020817] text-white flex">
+    <div className="min-h-screen bg-[#020817] text-white flex flex-col md:flex-row overflow-x-hidden">
       {/* Sidebar */}
       <aside className="hidden md:flex w-72 min-h-screen border-r border-white/10 bg-black/20 backdrop-blur-xl p-6 flex-col">
         <h1 className="text-4xl font-black text-cyan-400 mb-10">WaveSights</h1>
@@ -364,18 +364,18 @@ export default function Dashboard() {
         </div>
       </aside>
       {/* Mobile Header */}
-      <div className="md:hidden flex items-center justify-between p-5 border-b border-white/10 bg-[#020817]">
+      <div className="md:hidden flex items-center justify-between w-full p-5 border-b border-white/10 bg-[#020817]">
         <h1 className="text-3xl font-black text-cyan-400">WaveSights</h1>
 
         <button className="text-4xl text-white">☰</button>
       </div>
 
       {/* Main Content */}
-      <main className="flex-1 p-6 md:p-10 overflow-y-auto">
+      <main className="flex-1 p-4 md:p-10 overflow-y-auto max-w-full">
         {/* Top Header */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
           <div>
-            <h1 className="text-5xl font-black mb-3 text-cyan-400">
+            <h1 className="text-3xl md:text-5xl font-black mb-3 text-cyan-400 leading-tight">
               Welcome Future {interest} Expert 🚀
             </h1>
 
@@ -384,43 +384,45 @@ export default function Dashboard() {
             </p>
           </div>
 
-          <div className="bg-white/5 border border-white/10 px-6 py-4 rounded-2xl">
+          <div className="w-full md:w-auto bg-white/5 border border-white/10 px-6 py-4 rounded-2xl">
             <p className="text-gray-400 text-sm">Current Goal</p>
-            <h2 className="text-2xl font-bold text-cyan-400">{careerGoal}</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-cyan-400 break-words">{careerGoal}</h2>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-4xl font-black text-cyan-400">12</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-cyan-400">12</h2>
             <p className="text-gray-400 mt-2">Skills Learned</p>
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-4xl font-black text-cyan-400">5</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-cyan-400">5</h2>
             <p className="text-gray-400 mt-2">Projects Completed</p>
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-4xl font-black text-cyan-400">78%</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-cyan-400">78%</h2>
             <p className="text-gray-400 mt-2">Career Progress</p>
           </div>
         </div>
 
         {/* Roadmap Cards */}
         <section className="mb-14">
-          <h2 className="text-4xl font-black mb-8">AI Career Roadmaps</h2>
+          <h2 className="text-2xl md:text-4xl font-black mb-8">
+  AI Career Roadmaps
+</h2>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {roadmapCards.map((card, index) => (
               <div
                 key={index}
-                className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-white/10 rounded-3xl p-8 hover:border-cyan-400/40 transition duration-300 hover:-translate-y-2"
+                className="bg-gradient-to-br hover:shadow-cyan-500/20 hover:shadow-2xl from-cyan-500/10 to-blue-500/10 border border-white/10 rounded-3xl p-5 md:p-8 hover:border-cyan-400/40 transition duration-300 hover:-translate-y-2"
               >
-                <div className="text-6xl mb-6">{card.icon}</div>
+                <div className="text-4xl md:text-6xl mb-6">{card.icon}</div>
 
-                <h3 className="text-3xl font-bold mb-4">{card.title}</h3>
+                <h3 className="text-2xl md:text-3xl font-bold mb-4">{card.title}</h3>
 
                 <p className="text-gray-400 text-lg leading-relaxed mb-6">
                   {card.description}
@@ -438,20 +440,24 @@ export default function Dashboard() {
 
         {/* Recommendations */}
         <section>
-          <h2 className="text-4xl font-black mb-8">AI Recommendations</h2>
+          <h2 className="text-2xl md:text-4xl font-black mb-8">
+  AI Recommendations
+</h2>
 
           <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
             <div className="space-y-5">
               {recommendations.map((item, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-4 bg-white/5 rounded-2xl px-5 py-4 hover:bg-cyan-500/10 transition duration-300"
+                  className="flex flex-col md:flex-row items-start md:items-center gap-4 bg-white/5 rounded-2xl px-4 md:px-5 py-4 hover:bg-cyan-500/10 transition duration-300"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 flex items-center justify-center text-2xl">
                     ✨
                   </div>
 
-                  <p className="text-lg text-gray-200">{item}</p>
+                  <p className="text-base md:text-lg text-gray-200">
+  {item}
+</p>
                 </div>
               ))}
             </div>
@@ -459,12 +465,12 @@ export default function Dashboard() {
         </section>
 
         <section className="mt-14">
-          <h2 className="text-4xl font-black mb-8">
-            Personalized Career Roadmap
-          </h2>
+        <h2 className="text-2xl md:text-4xl font-black mb-8">
+  Personalized Career Roadmap
+</h2>
 
           <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-            <h3 className="text-3xl font-bold text-cyan-400 mb-8">
+            <h3 className="text-2xl md:text-3xl font-bold text-cyan-400 mb-8">
               {interest} Roadmap
             </h3>
 
@@ -472,14 +478,16 @@ export default function Dashboard() {
               {selectedRoadmap.map((step, index) => (
                 <div
                   key={index}
-                  className="flex items-center gap-5 bg-white/5 rounded-2xl px-6 py-5 hover:bg-cyan-500/10 transition duration-300"
+                 className="flex flex-col md:flex-row items-start md:items-center gap-5 bg-white/5 rounded-2xl px-4 md:px-6 py-5 hover:bg-cyan-500/10 transition duration-300"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 flex items-center justify-center font-bold text-cyan-400">
                     {index + 1}
                   </div>
 
                   <div className="flex items-center justify-between w-full">
-                    <p className="text-lg">{step}</p>
+                    <p className="text-base md:text-lg break-words">
+  {step}
+</p>
 
                     <input
                       type="checkbox"
@@ -506,14 +514,14 @@ export default function Dashboard() {
             <>
               <Confetti />
 
-              <div className="mt-10 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-3xl p-10 text-center animate-pulse">
-                <h2 className="text-6xl font-black text-cyan-400 mb-6">
+              <div className="mt-10 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 border border-cyan-400/30 rounded-3xl p-5 md:p-10 text-center animate-pulse">
+                <h2 className="text-3xl md:text-6xl font-black text-cyan-400 mb-6">
                   🎉 Congratulations 🎉
                 </h2>
 
-                <div className="text-6xl mb-6">🚀 🌸 🎊 ✨ 🏆</div>
+                <div className="text-4xl md:text-6xl mb-6">🚀 🌸 🎊 ✨ 🏆</div>
 
-                <p className="text-2xl text-gray-200 leading-relaxed max-w-3xl mx-auto">
+                <p className="text-lg md:text-2xl text-gray-200 leading-relaxed max-w-3xl mx-auto">
                   You completed your {interest} roadmap successfully!
                   <br />
                   <br />
