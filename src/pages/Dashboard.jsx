@@ -14,6 +14,7 @@ export default function Dashboard() {
 
   const skillLevel = localStorage.getItem("skillLevel")?.toLowerCase();
   const [completedSteps, setCompletedSteps] = useState([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const selectedRoadmap = roadmapData[interest]?.[skillLevel] || [];
 
@@ -332,7 +333,19 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-[#020817] text-white flex flex-col md:flex-row overflow-x-hidden">
       {/* Sidebar */}
-      <aside className="hidden md:flex w-72 min-h-screen border-r border-white/10 bg-black/20 backdrop-blur-xl p-6 flex-col">
+
+      <aside
+        className={`fixed md:relative top-0 left-0 z-50 w-72 min-h-screen border-r border-white/10 bg-[#020817] p-6 flex-col transform transition-transform duration-300 ${
+          mobileMenuOpen ? "translate-x-0 flex" : "-translate-x-full hidden"
+        } md:flex md:translate-x-0`}
+      >
+        <button
+          onClick={() => setMobileMenuOpen(false)}
+          className="md:hidden text-white text-3xl mb-6"
+        >
+          ✕
+        </button>
+
         <h1 className="text-4xl font-black text-cyan-400 mb-10">WaveSights</h1>
 
         <div className="space-y-4">
@@ -367,7 +380,12 @@ export default function Dashboard() {
       <div className="md:hidden flex items-center justify-between w-full p-5 border-b border-white/10 bg-[#020817]">
         <h1 className="text-3xl font-black text-cyan-400">WaveSights</h1>
 
-        <button className="text-4xl text-white">☰</button>
+        <button
+          onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          className="text-4xl text-white"
+        >
+          ☰
+        </button>
       </div>
 
       {/* Main Content */}
@@ -386,14 +404,18 @@ export default function Dashboard() {
 
           <div className="w-full md:w-auto bg-white/5 border border-white/10 px-6 py-4 rounded-2xl">
             <p className="text-gray-400 text-sm">Current Goal</p>
-            <h2 className="text-xl md:text-2xl font-bold text-cyan-400 break-words">{careerGoal}</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-cyan-400 break-words">
+              {careerGoal}
+            </h2>
           </div>
         </div>
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-3xl md:text-4xl font-black text-cyan-400">12</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-cyan-400">
+              12
+            </h2>
             <p className="text-gray-400 mt-2">Skills Learned</p>
           </div>
 
@@ -403,7 +425,9 @@ export default function Dashboard() {
           </div>
 
           <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-3xl md:text-4xl font-black text-cyan-400">78%</h2>
+            <h2 className="text-3xl md:text-4xl font-black text-cyan-400">
+              78%
+            </h2>
             <p className="text-gray-400 mt-2">Career Progress</p>
           </div>
         </div>
@@ -411,8 +435,8 @@ export default function Dashboard() {
         {/* Roadmap Cards */}
         <section className="mb-14">
           <h2 className="text-2xl md:text-4xl font-black mb-8">
-  AI Career Roadmaps
-</h2>
+            AI Career Roadmaps
+          </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {roadmapCards.map((card, index) => (
@@ -422,7 +446,9 @@ export default function Dashboard() {
               >
                 <div className="text-4xl md:text-6xl mb-6">{card.icon}</div>
 
-                <h3 className="text-2xl md:text-3xl font-bold mb-4">{card.title}</h3>
+                <h3 className="text-2xl md:text-3xl font-bold mb-4">
+                  {card.title}
+                </h3>
 
                 <p className="text-gray-400 text-lg leading-relaxed mb-6">
                   {card.description}
@@ -441,8 +467,8 @@ export default function Dashboard() {
         {/* Recommendations */}
         <section>
           <h2 className="text-2xl md:text-4xl font-black mb-8">
-  AI Recommendations
-</h2>
+            AI Recommendations
+          </h2>
 
           <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
             <div className="space-y-5">
@@ -455,9 +481,7 @@ export default function Dashboard() {
                     ✨
                   </div>
 
-                  <p className="text-base md:text-lg text-gray-200">
-  {item}
-</p>
+                  <p className="text-base md:text-lg text-gray-200">{item}</p>
                 </div>
               ))}
             </div>
@@ -465,9 +489,9 @@ export default function Dashboard() {
         </section>
 
         <section className="mt-14">
-        <h2 className="text-2xl md:text-4xl font-black mb-8">
-  Personalized Career Roadmap
-</h2>
+          <h2 className="text-2xl md:text-4xl font-black mb-8">
+            Personalized Career Roadmap
+          </h2>
 
           <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
             <h3 className="text-2xl md:text-3xl font-bold text-cyan-400 mb-8">
@@ -478,16 +502,14 @@ export default function Dashboard() {
               {selectedRoadmap.map((step, index) => (
                 <div
                   key={index}
-                 className="flex flex-col md:flex-row items-start md:items-center gap-5 bg-white/5 rounded-2xl px-4 md:px-6 py-5 hover:bg-cyan-500/10 transition duration-300"
+                  className="flex flex-col md:flex-row items-start md:items-center gap-5 bg-white/5 rounded-2xl px-4 md:px-6 py-5 hover:bg-cyan-500/10 transition duration-300"
                 >
                   <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 flex items-center justify-center font-bold text-cyan-400">
                     {index + 1}
                   </div>
 
                   <div className="flex items-center justify-between w-full">
-                    <p className="text-base md:text-lg break-words">
-  {step}
-</p>
+                    <p className="text-base md:text-lg break-words">{step}</p>
 
                     <input
                       type="checkbox"
