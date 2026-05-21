@@ -54,8 +54,15 @@ export default function AIChat() {
 
       const timeCommitment = localStorage.getItem("timeCommitment") || "";
 
-      const prompt = `
-You are WaveSights AI, a personalized career guidance assistant.
+      const conversationHistory = messages
+  .map(
+    (msg) =>
+      `${msg.sender === "user" ? "User" : "AI"}: ${msg.text}`
+  )
+  .join("\n");
+
+   const prompt = `
+You are WaveSights AI, an advanced personalized AI Career Guidance Assistant.
 
 User Profile:
 - Background: ${stream}
@@ -64,11 +71,21 @@ User Profile:
 - Skill Level: ${skillLevel}
 - Daily Time Commitment: ${timeCommitment}
 
-User Question:
+Previous Conversation:
+${conversationHistory}
+
+Current User Question:
 ${input}
 
-Give personalized, practical, motivating guidance.
+IMPORTANT:
+- Remember previous conversation context.
+- Give highly personalized career guidance.
+- If user wants career transition, guide step-by-step.
+- Recommend roadmap, projects, internships, and learning strategy.
+- Be practical and motivational.
+- Avoid generic answers.
 `;
+
 
       const result = await model.generateContent(prompt);
 
@@ -167,11 +184,11 @@ Give personalized, practical, motivating guidance.
             }`}
           >
             <div
-              className={`w-full md:max-w-2xl px-5 md:px-6 py-4 md:py-5 rounded-3xl text-lg leading-relaxed shadow-lg
+              className={`max-w-[85%] md:max-w-2xl px-5 md:px-6 py-4 md:py-5 rounded-3xl break-words text-base md:text-lg leading-relaxed shadow-lg
 
               ${
                 message.sender === "user"
-                  ? "bg-cyan-500 text-black"
+                  ? "bg-cyan-500 text-black self-end break-words"
                   : "bg-white/5 border border-white/10 text-white"
               }`}
             >
@@ -190,7 +207,7 @@ Give personalized, practical, motivating guidance.
       </div>
 
       {/* Input */}
-      <div className="border-t border-white/10 p-6">
+      <div className="border-t border-white/10 p-4 md:p-6 sticky bottom-0 bg-[#020817]">
         <div className="flex flex-col md:flex-row gap-4">
           <input
             type="text"
