@@ -1,11 +1,13 @@
 import { useState } from "react";
 import Confetti from "react-confetti";
+import DailyAITasks from "../components/DailyAITasks";
+import roadmapData from "../data/roadmapData";
 const interest = localStorage.getItem("interest");
 const goal = localStorage.getItem("goal");
 const skillLevel = localStorage.getItem("skillLevel");
 const timeCommitment = localStorage.getItem("timeCommitment");
 
-import roadmapData from "../data/roadmapData";
+
 
 export default function Dashboard() {
   const userType = localStorage.getItem("userType");
@@ -556,6 +558,8 @@ export default function Dashboard() {
               </div>
             </>
           )}
+
+          <DailyAITasks />
       </main>
     </div>
   );
