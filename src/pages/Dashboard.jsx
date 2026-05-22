@@ -353,9 +353,12 @@ export default function Dashboard() {
             Dashboard
           </button>
 
-          <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300">
-            AI Roadmaps
-          </button>
+          <button
+  onClick={() => (window.location.href = "/ai-roadmap")}
+  className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
+>
+  AI Roadmaps
+</button>
 
           <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300">
             Skill Tracker

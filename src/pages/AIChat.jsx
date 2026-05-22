@@ -1,11 +1,5 @@
 import { useState, useEffect } from "react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-
-const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash-latest",
-});
+import axios from "axios";
 
 export default function AIChat() {
   const [messages, setMessages] = useState(() => {
@@ -39,8 +33,6 @@ export default function AIChat() {
 
     setMessages((prev) => [...prev, userMessage]);
 
-    setInput("");
-
     setLoading(true);
 
     try {
@@ -52,17 +44,19 @@ export default function AIChat() {
 
       const stream = localStorage.getItem("educationStream") || "";
 
-      const timeCommitment = localStorage.getItem("timeCommitment") || "";
+      const timeCommitment =
+        localStorage.getItem("timeCommitment") || "";
 
       const conversationHistory = messages
-  .map(
-    (msg) =>
-      `${msg.sender === "user" ? "User" : "AI"}: ${msg.text}`
-  )
-  .join("\n");
+        .slice(-5)
+        .map(
+          (msg) =>
+            `${msg.sender === "user" ? "User" : "AI"}: ${msg.text}`
+        )
+        .join("\n");
 
-   const prompt = `
-You are WaveSights AI, an advanced personalized AI Career Guidance Assistant.
+      const prompt = `
+You are WaveSights AI, a modern AI Career Mentor.
 
 User Profile:
 - Background: ${stream}
@@ -77,21 +71,67 @@ ${conversationHistory}
 Current User Question:
 ${input}
 
-IMPORTANT:
-- Remember previous conversation context.
-- Give highly personalized career guidance.
-- If user wants career transition, guide step-by-step.
-- Recommend roadmap, projects, internships, and learning strategy.
-- Be practical and motivational.
-- Avoid generic answers.
+STRICT RESPONSE RULES:
+
+- NEVER write huge paragraphs.
+- ALWAYS answer in short line-by-line format.
+- ALWAYS use headings with emojis.
+- ALWAYS add spacing between sections.
+- ALWAYS keep answers mobile-friendly.
+- ALWAYS use bullet points.
+- ALWAYS sound practical and modern.
+- Keep answers visually attractive.
+- Keep sentences short.
+- Use markdown formatting.
+- Avoid robotic tone.
+- Make answers feel like ChatGPT premium responses.
+
+GOOD RESPONSE EXAMPLE:
+
+## 🚀 Start Learning
+- Learn fundamentals first
+- Build small projects
+- Practice consistently
+
+## 💼 Career Growth
+- Improve communication
+- Build portfolio
+- Apply for internships
+
+## 🔥 Long-Term Success
+- Stay disciplined
+- Keep learning
+- Build personal brand
+
+Now answer the user's question properly.
 `;
 
+      const response = await axios.post(
+        "https://openrouter.ai/api/v1/chat/completions",
+        {
+          model: "openai/gpt-3.5-turbo",
+          messages: [
+            {
+              role: "system",
+              content:
+                "You are WaveSights AI, a smart AI career mentor.",
+            },
+            {
+              role: "user",
+              content: prompt,
+            },
+          ],
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      const result = await model.generateContent(prompt);
-
-      const response = await result.response;
-
-      const text = response.text();
+      const text =
+        response.data.choices[0].message.content;
 
       const aiMessage = {
         sender: "ai",
@@ -99,42 +139,22 @@ IMPORTANT:
       };
 
       setMessages((prev) => [...prev, aiMessage]);
+
     } catch (error) {
-      console.log(error);
-
-      const interest = localStorage.getItem("interest") || "Technology";
-
-      const goal = localStorage.getItem("goal") || "Career Growth";
-
-      const skillLevel = localStorage.getItem("skillLevel") || "Beginner";
-
-      const stream = localStorage.getItem("educationStream") || "General";
-
-      let fallbackReply = "";
-
-      if (interest === "AI / ML") {
-        fallbackReply = `Based on your ${stream} background and ${skillLevel} level, start learning Python, machine learning basics, and build AI projects consistently to achieve your goal of ${goal} 🚀`;
-      } else if (interest === "Web Development") {
-        fallbackReply = `To achieve ${goal}, focus on HTML, CSS, JavaScript, and React. Build real projects regularly and improve your frontend skills daily 🚀`;
-      } else if (interest === "Cybersecurity") {
-        fallbackReply = `Start with networking, Linux, and ethical hacking basics. Consistent hands-on practice will help you achieve your ${goal} in cybersecurity 🔐`;
-      } else if (interest === "Data Science") {
-        fallbackReply = `Learn Python, data analysis, statistics, and visualization tools. Building data projects will help you move toward your ${goal} 📊`;
-      } else if (interest === "Finance") {
-        fallbackReply = `Focus on financial analysis, Excel, market understanding, and investment concepts. Building practical finance knowledge daily will help achieve your ${goal} 💰`;
-      } else {
-        fallbackReply = `Based on your ${stream} background and ${goal}, focus on consistent skill-building, practical projects, and daily learning to grow your career 🚀`;
-      }
+      console.log(error.response?.data || error.message);
 
       const errorMessage = {
         sender: "ai",
-        text: fallbackReply,
+        text:
+          "⚠️ WaveSights AI is temporarily unavailable. Please try again.",
       };
 
       setMessages((prev) => [...prev, errorMessage]);
     }
 
     setLoading(false);
+
+    setInput("");
   };
 
   const clearChat = () => {
@@ -153,7 +173,9 @@ IMPORTANT:
       {/* Header */}
       <div className="border-b border-white/10 px-4 md:px-6 py-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-cyan-400">WaveSights AI</h1>
+          <h1 className="text-3xl font-black text-cyan-400">
+            WaveSights AI
+          </h1>
 
           <p className="text-gray-400 text-sm mt-1">
             Your Personalized AI Career Assistant
@@ -174,21 +196,23 @@ IMPORTANT:
         </div>
       </div>
 
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-6">
+      {/* Messages */}
+      <div className="flex-1 overflow-y-auto px-4 md:px-6 py-8 space-y-6">
         {messages.map((message, index) => (
           <div
             key={index}
             className={`flex ${
-              message.sender === "user" ? "justify-end" : "justify-start"
+              message.sender === "user"
+                ? "justify-end"
+                : "justify-start"
             }`}
           >
             <div
               className={`max-w-[85%] md:max-w-2xl px-5 md:px-6 py-4 md:py-5 rounded-3xl break-words text-base md:text-lg leading-relaxed shadow-lg
-
+              
               ${
                 message.sender === "user"
-                  ? "bg-cyan-500 text-black self-end break-words"
+                  ? "bg-cyan-500 text-black self-end"
                   : "bg-white/5 border border-white/10 text-white"
               }`}
             >
@@ -200,7 +224,7 @@ IMPORTANT:
         {loading && (
           <div className="flex justify-start">
             <div className="bg-white/5 border border-white/10 px-6 py-5 rounded-3xl">
-              Thinking...
+              WaveSights AI is thinking...
             </div>
           </div>
         )}

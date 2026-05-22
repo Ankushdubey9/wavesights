@@ -61,6 +61,8 @@ export default function TimeCommitment() {
 
   }
 
+  console.log("Navigating to dashboard...");
+
   navigate("/dashboard");
 
 };
