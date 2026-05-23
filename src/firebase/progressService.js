@@ -68,3 +68,70 @@ export const loadProgress = async (
     return [];
   }
 };
+
+export const updateLearningStreak =
+  async (userId) => {
+
+    try {
+
+      const userRef = doc(
+        db,
+        "users",
+        userId
+      );
+
+      const userSnap =
+        await getDoc(userRef);
+
+      const today =
+        new Date().toDateString();
+
+      if (userSnap.exists()) {
+
+        const data =
+          userSnap.data();
+
+        const lastActiveDate =
+          data.lastActiveDate;
+
+        let streak =
+          data.learningStreak || 0;
+
+        if (
+          lastActiveDate !== today
+        ) {
+
+          streak += 1;
+
+          await setDoc(
+            userRef,
+            {
+              learningStreak:
+                streak,
+
+              lastActiveDate:
+                today,
+            },
+            { merge: true }
+          );
+        }
+
+      } else {
+
+        await setDoc(
+          userRef,
+          {
+            learningStreak: 1,
+
+            lastActiveDate:
+              today,
+          },
+          { merge: true }
+        );
+      }
+
+    } catch (error) {
+
+      console.log(error);
+    }
+  };

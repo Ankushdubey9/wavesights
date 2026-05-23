@@ -6,6 +6,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import AIChat from "./pages/AIChat";
 import AIRoadmap from "./pages/AIRoadmap";
+import ResumeAnalyzer from "./pages/ResumeAnalyzer";
 
 import UserType from "./pages/onboarding/UserType";
 import EducationStream from "./pages/onboarding/EducationStream";
@@ -23,6 +24,10 @@ function App() {
       <Route path="/signup" element={<Signup />} />
       <Route path="/dashboard" element={<Dashboard />} />
       <Route path="/ai-roadmap" element={<AIRoadmap />} />
+      <Route
+  path="/resume-analyzer"
+  element={<ResumeAnalyzer />}
+/>
 
       {/* Onboarding Flow */}
       <Route path="/onboarding/user-type" element={<UserType />} />

@@ -3,8 +3,19 @@ import Confetti from "react-confetti";
 import DailyAITasks from "../components/DailyAITasks";
 import roadmapData from "../data/roadmapData";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import {
+  doc,
+  getDoc,
+} from "firebase/firestore";
 
-import { saveProgress, loadProgress } from "../firebase/progressService";
+import { db } from "../firebase";
+
+import {
+  saveProgress,
+  loadProgress,
+  updateLearningStreak,
+} from "../firebase/progressService";
 
 const interest = localStorage.getItem("interest");
 const goal = localStorage.getItem("goal");
@@ -18,6 +29,8 @@ export default function Dashboard() {
 
   const skillLevel = localStorage.getItem("skillLevel")?.toLowerCase();
   const [completedSteps, setCompletedSteps] = useState([]);
+  const [learningStreak, setLearningStreak] =
+  useState(1);
 
   const userId =
   localStorage.getItem("userId") ||
@@ -35,6 +48,25 @@ export default function Dashboard() {
 
       const savedProgress =
         await loadProgress(userId);
+        await updateLearningStreak(
+  userId
+);
+const userRef = doc(
+  db,
+  "users",
+  userId
+);
+
+const userSnap =
+  await getDoc(userRef);
+
+if (userSnap.exists()) {
+
+  setLearningStreak(
+    userSnap.data()
+      .learningStreak || 1
+  );
+}
 
       console.log(
         "Loaded Progress:",
@@ -402,9 +434,12 @@ export default function Dashboard() {
             Internship Guidance
           </button>
 
-          <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300">
-            Resume Analyzer
-          </button>
+          <Link
+  to="/resume-analyzer"
+  className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
+>
+  Resume Analyzer
+</Link>
           <button
             onClick={() => (window.location.href = "/ai-chat")}
             className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
@@ -483,20 +518,21 @@ export default function Dashboard() {
     </p>
   </div>
 
-  {/* Remaining Skills */}
-  <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+  {/* Learning Streak */}
 
-    <h2 className="text-4xl font-black text-cyan-400">
+<div className="bg-white/5 border border-white/10 rounded-3xl p-6">
 
-      {selectedRoadmap.length -
-        completedSteps.length}
+  <h2 className="text-4xl font-black text-cyan-400">
 
-    </h2>
+    🔥 {learningStreak}
 
-    <p className="text-gray-400 mt-2">
-      Remaining Skills
-    </p>
-  </div>
+  </h2>
+
+  <p className="text-gray-400 mt-2">
+    Day Learning Streak
+  </p>
+</div>
+
 </div>
 
         {/* Roadmap Cards */}
