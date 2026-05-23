@@ -2,12 +2,14 @@ import { useState } from "react";
 import Confetti from "react-confetti";
 import DailyAITasks from "../components/DailyAITasks";
 import roadmapData from "../data/roadmapData";
+import { useEffect } from "react";
+
+import { saveProgress, loadProgress } from "../firebase/progressService";
+
 const interest = localStorage.getItem("interest");
 const goal = localStorage.getItem("goal");
 const skillLevel = localStorage.getItem("skillLevel");
 const timeCommitment = localStorage.getItem("timeCommitment");
-
-
 
 export default function Dashboard() {
   const userType = localStorage.getItem("userType");
@@ -16,9 +18,24 @@ export default function Dashboard() {
 
   const skillLevel = localStorage.getItem("skillLevel")?.toLowerCase();
   const [completedSteps, setCompletedSteps] = useState([]);
+
+  const userId = localStorage.getItem("userId");
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const selectedRoadmap = roadmapData[interest]?.[skillLevel] || [];
+
+  useEffect(() => {
+    const fetchProgress = async () => {
+      if (!userId) return;
+
+      const savedProgress = await loadProgress(userId);
+
+      setCompletedSteps(savedProgress);
+    };
+
+    fetchProgress();
+  }, []);
 
   console.log(careerGoal);
 
@@ -356,11 +373,11 @@ export default function Dashboard() {
           </button>
 
           <button
-  onClick={() => (window.location.href = "/ai-roadmap")}
-  className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
->
-  AI Roadmaps
-</button>
+            onClick={() => (window.location.href = "/ai-roadmap")}
+            className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
+          >
+            AI Roadmaps
+          </button>
 
           <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300">
             Skill Tracker
@@ -518,15 +535,22 @@ export default function Dashboard() {
 
                     <input
                       type="checkbox"
+                      checked={completedSteps.includes(step)}
                       className="w-6 h-6 accent-cyan-400"
-                      onChange={(e) => {
+                      onChange={async (e) => {
+                        let updatedSteps = [];
+
                         if (e.target.checked) {
-                          setCompletedSteps((prev) => [...prev, step]);
+                          updatedSteps = [...completedSteps, step];
                         } else {
-                          setCompletedSteps((prev) =>
-                            prev.filter((item) => item !== step),
+                          updatedSteps = completedSteps.filter(
+                            (item) => item !== step,
                           );
                         }
+                          
+                        setCompletedSteps(updatedSteps);
+                                                                 
+                        await saveProgress(userId, updatedSteps);
                       }}
                     />
                   </div>
@@ -559,7 +583,7 @@ export default function Dashboard() {
             </>
           )}
 
-          <DailyAITasks />
+        <DailyAITasks />
       </main>
     </div>
   );
