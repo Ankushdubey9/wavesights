@@ -19,23 +19,38 @@ export default function Dashboard() {
   const skillLevel = localStorage.getItem("skillLevel")?.toLowerCase();
   const [completedSteps, setCompletedSteps] = useState([]);
 
-  const userId = localStorage.getItem("userId");
+  const userId =
+  localStorage.getItem("userId") ||
+  "demoUser";
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const selectedRoadmap = roadmapData[interest]?.[skillLevel] || [];
 
   useEffect(() => {
-    const fetchProgress = async () => {
-      if (!userId) return;
 
-      const savedProgress = await loadProgress(userId);
+  const fetchProgress = async () => {
+
+    try {
+
+      const savedProgress =
+        await loadProgress(userId);
+
+      console.log(
+        "Loaded Progress:",
+        savedProgress
+      );
 
       setCompletedSteps(savedProgress);
-    };
 
-    fetchProgress();
-  }, []);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  fetchProgress();
+
+}, [userId]);
 
   console.log(careerGoal);
 
@@ -432,27 +447,57 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-3xl md:text-4xl font-black text-cyan-400">
-              12
-            </h2>
-            <p className="text-gray-400 mt-2">Skills Learned</p>
-          </div>
+        {/* Dynamic Stats */}
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
 
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-3xl md:text-4xl font-black text-cyan-400">5</h2>
-            <p className="text-gray-400 mt-2">Projects Completed</p>
-          </div>
+  {/* Skills Learned */}
+  <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
 
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h2 className="text-3xl md:text-4xl font-black text-cyan-400">
-              78%
-            </h2>
-            <p className="text-gray-400 mt-2">Career Progress</p>
-          </div>
-        </div>
+    <h2 className="text-4xl font-black text-cyan-400">
+      {completedSteps.length}
+    </h2>
+
+    <p className="text-gray-400 mt-2">
+      Skills Learned
+    </p>
+  </div>
+
+  {/* Progress */}
+  <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+
+    <h2 className="text-4xl font-black text-cyan-400">
+
+      {selectedRoadmap.length > 0
+        ? Math.round(
+            (completedSteps.length /
+              selectedRoadmap.length) *
+              100
+          )
+        : 0}
+      %
+
+    </h2>
+
+    <p className="text-gray-400 mt-2">
+      Roadmap Progress
+    </p>
+  </div>
+
+  {/* Remaining Skills */}
+  <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+
+    <h2 className="text-4xl font-black text-cyan-400">
+
+      {selectedRoadmap.length -
+        completedSteps.length}
+
+    </h2>
+
+    <p className="text-gray-400 mt-2">
+      Remaining Skills
+    </p>
+  </div>
+</div>
 
         {/* Roadmap Cards */}
         <section className="mb-14">
@@ -485,6 +530,31 @@ export default function Dashboard() {
             ))}
           </div>
         </section>
+
+        {/* AI Motivation Section */}
+
+<div className="mb-10 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-6 md:p-8">
+
+  <h2 className="text-2xl md:text-4xl font-black text-cyan-400 mb-4">
+    🔥 AI Progress Insight
+  </h2>
+
+  <p className="text-lg md:text-xl text-gray-200 leading-relaxed">
+
+    You completed{" "}
+
+    <span className="text-cyan-400 font-bold">
+      {completedSteps.length}
+    </span>
+
+    {" "}roadmap steps.
+
+    {completedSteps.length > 0
+      ? " Keep pushing toward your dream career 🚀"
+      : " Start your first roadmap step today 🚀"}
+
+  </p>
+</div>
 
         {/* Recommendations */}
         <section>
@@ -537,20 +607,26 @@ export default function Dashboard() {
                       type="checkbox"
                       checked={completedSteps.includes(step)}
                       className="w-6 h-6 accent-cyan-400"
-                      onChange={async (e) => {
+                      onChange={async () => {
                         let updatedSteps = [];
 
-                        if (e.target.checked) {
-                          updatedSteps = [...completedSteps, step];
-                        } else {
+                        if (completedSteps.includes(step)) {
                           updatedSteps = completedSteps.filter(
                             (item) => item !== step,
                           );
+                        } else {
+                          updatedSteps = [...completedSteps, step];
                         }
-                          
+
                         setCompletedSteps(updatedSteps);
-                                                                 
-                        await saveProgress(userId, updatedSteps);
+
+                        try {
+                          await saveProgress(userId, updatedSteps);
+
+                          console.log("Saved:", updatedSteps);
+                        } catch (error) {
+                          console.log(error);
+                        }
                       }}
                     />
                   </div>
