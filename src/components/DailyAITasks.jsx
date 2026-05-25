@@ -1,18 +1,82 @@
 import { useEffect, useState } from "react";
+
 import axios from "axios";
 
 export default function DailyAITasks() {
-  const [tasks, setTasks] = useState("");
-  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
+  const [tasks, setTasks] =
+    useState([]);
+
+  const [loading, setLoading] =
+    useState(false);
+
+  const [xp, setXp] =
+    useState(
+      Number(
+        localStorage.getItem("xp")
+      ) || 0
+    );
+
+    const getLevel = () => {
+
+  if (xp >= 1500)
+    return "🏆 Career Master";
+
+  if (xp >= 700)
+    return "🔥 AI Warrior";
+
+  if (xp >= 300)
+    return "🚀 Builder";
+
+  if (xp >= 100)
+    return "⚡ Explorer";
+
+  return "🌱 Beginner";
+};
+
+const getBadge = () => {
+
+  if (xp >= 1500)
+    return "👑 Legend Badge";
+
+  if (xp >= 700)
+    return "🏆 Warrior Badge";
+
+  if (xp >= 300)
+    return "🚀 Builder Badge";
+
+  if (xp >= 100)
+    return "⚡ Explorer Badge";
+
+  return "🌱 Starter Badge";
+};
+
+ useEffect(() => {
+
+  const savedTasks =
+    localStorage.getItem(
+      "dailyTasks"
+    );
+
+  if (savedTasks) {
+
+    setTasks(
+      JSON.parse(savedTasks)
+    );
+
+  } else {
+
     generateTasks();
-  }, []);
+  }
+
+}, []);
 
   const generateTasks = async () => {
+
     setLoading(true);
 
     try {
+
       const interest =
         localStorage.getItem("interest") || "";
 
@@ -25,10 +89,11 @@ export default function DailyAITasks() {
       const stream =
         localStorage.getItem("educationStream") || "";
 
-      const prompt = `
+      const prompt =
+`
 You are WaveSights AI.
 
-Generate personalized daily career tasks.
+Generate 5 personalized daily career tasks.
 
 User Details:
 - Background: ${stream}
@@ -37,90 +102,278 @@ User Details:
 - Skill Level: ${skillLevel}
 
 STRICT RULES:
-- Use emojis
-- Use bullet points
-- Keep tasks practical
-- Keep answers short
-- Make tasks motivating
-- Make mobile friendly
-- Give only 5 tasks
-
-Example:
-
-## 🚀 Today's Tasks
-
-✅ Learn React basics
-✅ Solve 2 coding problems
-✅ Improve LinkedIn profile
-✅ Watch AI tutorial
-✅ Build mini project
+- Return ONLY short tasks
+- One task per line
+- No numbering
+- No paragraphs
 `;
 
-      const response = await axios.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
-          model: "meta-llama/llama-3-8b-instruct",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are an AI career productivity coach.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
-            "Content-Type": "application/json",
+      const response =
+        await axios.post(
+          "https://openrouter.ai/api/v1/chat/completions",
+          {
+            model:
+              "meta-llama/llama-3-8b-instruct",
+
+            messages: [
+              {
+                role: "system",
+
+                content:
+                  "You are an AI productivity coach.",
+              },
+
+              {
+                role: "user",
+
+                content: prompt,
+              },
+            ],
           },
-        }
-      );
+          {
+            headers: {
+              Authorization:
+                `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+
+              "Content-Type":
+                "application/json",
+            },
+          }
+        );
 
       const text =
-        response.data.choices[0].message.content;
+        response.data.choices[0]
+          .message.content;
 
-      setTasks(text);
+      const taskArray =
+        text
+          .split("\n")
+          .filter(
+            (task) =>
+              task.trim() !== ""
+          );
 
-    } catch (error) {
-      console.log(error);
+    const formattedTasks =
+  taskArray.map(
+    (task, index) => ({
+
+      text: task,
+
+      completed: false,
+
+      xp:
+        index === 0
+          ? 50
+          : index <= 2
+          ? 25
+          : 10,
+    })
+  );
 
       setTasks(
-        "⚠️ Failed to generate AI tasks."
+        formattedTasks
       );
+
+      localStorage.setItem(
+  "dailyTasks",
+  JSON.stringify(
+    formattedTasks
+  )
+);
+
+    } catch (error) {
+
+      console.log(error);
+
+    } finally {
+
+      setLoading(false);
+    }
+  };
+
+  const completeTask = (index) => {
+
+    const updatedTasks =
+      [...tasks];
+
+    if (
+      !updatedTasks[index]
+        .completed
+    ) {
+
+      updatedTasks[index]
+        .completed = true;
+
+      const newXP =
+  xp +
+  updatedTasks[index].xp;
+
+      setXp(newXP);
+
+      localStorage.setItem(
+        "xp",
+        newXP
+      );
+
+    alert(
+  `🎉 Task Completed! +${updatedTasks[index].xp} XP`
+);
     }
 
-    setLoading(false);
+    setTasks(updatedTasks);
+
+    localStorage.setItem(
+  "dailyTasks",
+  JSON.stringify(
+    updatedTasks
+  )
+);
   };
 
   return (
+
     <div className="bg-white/5 border border-white/10 rounded-3xl p-6 md:p-8 mt-10">
 
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl md:text-4xl font-black text-cyan-400">
-          Daily AI Tasks 🚀
-        </h2>
+      {/* Header */}
+
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+
+        <div>
+
+          <h2 className="text-3xl md:text-5xl font-black text-cyan-400">
+
+            🚀 Daily AI Tasks
+
+          </h2>
+
+          <p className="text-gray-400 mt-2">
+
+            Complete tasks and grow daily 🔥
+
+          </p>
+
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4">
+
+  {/* XP */}
+
+  <div className="bg-gradient-to-r from-cyan-400 to-blue-500 text-black px-6 py-3 rounded-2xl font-black text-xl shadow-lg">
+
+    ⚡ {xp} XP
+
+  </div>
+
+  {/* Level */}
+
+  <div className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-2xl font-black text-xl shadow-lg">
+
+    {getLevel()}
+
+  </div>
+
+  {/* Badge */}
+
+  <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black px-6 py-3 rounded-2xl font-black text-xl shadow-lg">
+
+    {getBadge()}
+
+  </div>
+
+</div>
+
+      </div>
+
+      {/* Loading */}
+
+      {loading ? (
+
+        <div className="text-cyan-400 animate-pulse text-lg">
+
+          WaveSights AI is generating tasks...
+
+        </div>
+
+      ) : (
+
+        <div className="space-y-5">
+
+          {tasks.map(
+            (task, index) => (
+
+              <div
+                key={index}
+
+                className={`flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white/5 border border-white/10 rounded-2xl p-5 transition-all ${
+                  task.completed
+                    ? "opacity-60"
+                    : ""
+                }`}
+              >
+
+                <div className="flex items-center gap-4">
+
+                  <div className="text-2xl">
+
+                    {task.completed
+                      ? "✅"
+                      : "🔥"}
+
+                  </div>
+
+                  <p className="text-lg text-gray-200">
+
+                    {task.text}
+
+                  </p>
+
+                </div>
+
+                <button
+                  onClick={() =>
+                    completeTask(index)
+                  }
+
+                  disabled={
+                    task.completed
+                  }
+
+                  className={`px-6 py-3 rounded-2xl font-bold transition-all ${
+                    task.completed
+                      ? "bg-green-500 text-white"
+                      : "bg-gradient-to-r from-cyan-400 to-blue-500 text-black hover:scale-105"
+                  }`}
+                >
+
+                  {task.completed
+  ? "✅ Completed"
+  : `+${task.xp} XP`}
+
+                </button>
+
+              </div>
+            )
+          )}
+
+        </div>
+      )}
+
+      {/* Refresh */}
+
+      <div className="mt-8">
 
         <button
           onClick={generateTasks}
-          className="bg-cyan-500 hover:bg-cyan-400 text-black font-bold px-5 py-3 rounded-2xl transition duration-300"
+
+          className="px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-lg hover:scale-105 transition-all shadow-lg"
         >
-          Refresh
+
+          🔄 Generate New Tasks
+
         </button>
+
       </div>
 
-      {loading ? (
-        <div className="text-cyan-400 animate-pulse text-lg">
-          WaveSights AI is generating tasks...
-        </div>
-      ) : (
-        <div className="whitespace-pre-wrap text-base md:text-lg leading-relaxed">
-          {tasks}
-        </div>
-      )}
     </div>
   );
 }

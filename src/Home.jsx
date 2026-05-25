@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 
+
 export default function App() {
   const journeys = [
     {
@@ -231,15 +232,22 @@ export default function App() {
                 {item.description}
               </p>
 
-             <button
+             <Link
+  to="/auth"
+
   onClick={() => {
-    localStorage.setItem("userType", item.title);
-    window.location.href = "/signup";
+    localStorage.setItem(
+      "userType",
+      item.title
+    );
   }}
-  className="w-full bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black px-6 py-3 rounded-2xl font-bold transition duration-300"
+
+  className="block w-full text-center bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black px-6 py-3 rounded-2xl font-bold transition duration-300"
 >
-  Continue
-</button>
+
+  Get Started 🚀
+
+</Link>
             </div>
           ))}
         </div>

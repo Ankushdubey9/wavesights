@@ -4,6 +4,7 @@ import DailyAITasks from "../components/DailyAITasks";
 import roadmapData from "../data/roadmapData";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+
 import {
   doc,
   getDoc,
@@ -66,6 +67,13 @@ if (userSnap.exists()) {
     userSnap.data()
       .learningStreak || 1
   );
+
+  localStorage.setItem(
+  "firebaseStreak",
+  userSnap.data()
+    .learningStreak || 1
+);
+
 }
 
       console.log(
@@ -419,12 +427,30 @@ if (userSnap.exists()) {
             Dashboard
           </button>
 
+          <Link
+  to="/profile"
+  className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
+>
+
+  👤 Profile
+
+</Link>
+
           <button
             onClick={() => (window.location.href = "/ai-roadmap")}
             className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
           >
             AI Roadmaps
           </button>
+
+          <Link
+  to="/leaderboard"
+  className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
+>
+
+  🏆 Leaderboard
+
+</Link>
 
           <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300">
             Skill Tracker
@@ -439,6 +465,13 @@ if (userSnap.exists()) {
   className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
 >
   Resume Analyzer
+</Link>
+
+<Link
+  to="/mock-interview"
+  className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
+>
+  AI Mock Interview
 </Link>
           <button
             onClick={() => (window.location.href = "/ai-chat")}
