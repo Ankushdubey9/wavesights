@@ -17,10 +17,14 @@ import InterestSelection from "./pages/onboarding/InterestSelection";
 import GoalSelection from "./pages/onboarding/GoalSelection";
 import SkillLevel from "./pages/onboarding/SkillLevel";
 import TimeCommitment from "./pages/onboarding/TimeCommitment";
+import FloatingAI from "./components/FloatingAI";
 
 function App() {
   return (
-    <Routes>
+    <>
+  <FloatingAI />
+
+  <Routes>
       {/* Main Pages */}
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
@@ -50,6 +54,7 @@ function App() {
 
       <Route path="/ai-chat" element={<AIChat />} />
     </Routes>
+</>
   );
 }
 

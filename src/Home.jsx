@@ -1,7 +1,12 @@
 import { Link } from "react-router-dom";
-
+import { TypeAnimation } from "react-type-animation";
+import { useState } from "react";
 
 export default function App() {
+  const userName = localStorage.getItem("name");
+
+  const [mobileMenu, setMobileMenu] = useState(false);
+
   const journeys = [
     {
       icon: "🎓",
@@ -106,55 +111,112 @@ export default function App() {
       </div>
 
       {/* Navbar */}
-      <nav className="sticky top-0 z-50 backdrop-blur-xl bg-[#020817]/80 border-b border-white/10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10 py-5">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-black tracking-wide text-cyan-400">
-              WaveSights
-            </h1>
-            <p className="text-gray-400 text-sm md:text-base">
-              AI Career Guidance Platform
-            </p>
+      {/* PREMIUM NAVBAR */}
+      {mobileMenu && (
+        <div className="md:hidden fixed top-24 left-4 right-4 bg-[#020817] border border-white/10 rounded-3xl p-6 z-50 shadow-2xl">
+          <div className="flex flex-col gap-5 text-lg">
+            <a href="#journey">Journey</a>
+
+            <a href="#features">Features</a>
+
+            <a href="#pricing">Pricing</a>
+
+            <Link to="/auth">Login</Link>
+          </div>
+        </div>
+      )}
+
+      <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] rounded-3xl z-50 backdrop-blur-2xl bg-black/30 border-b border-white/10 shadow-2xl">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10 py-4">
+          {/* Logo */}
+
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/30">
+              🚀
+            </div>
+
+            <div>
+              <h1 className="text-3xl md:text-4xl font-black tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                WaveSights
+              </h1>
+
+              <p className="text-gray-400 text-sm md:text-base">
+                Your AI Career Mentor
+              </p>
+            </div>
           </div>
 
-          <div className="hidden md:flex items-center gap-10 text-gray-300 text-lg">
+          {/* Desktop Menu */}
+
+          <div className="hidden md:flex items-center gap-10 text-gray-300 text-lg font-medium">
             <a
               href="#journey"
-              className="hover:text-cyan-400 transition duration-300"
+              className="relative hover:text-cyan-400 transition duration-300 group"
             >
               Journey
+              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
             </a>
+
             <a
               href="#features"
-              className="hover:text-cyan-400 transition duration-300"
+              className="relative hover:text-cyan-400 transition duration-300 group"
             >
               Features
+              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
             </a>
+
             <a
               href="#pricing"
-              className="hover:text-cyan-400 transition duration-300"
+              className="relative hover:text-cyan-400 transition duration-300 group"
             >
               Pricing
+              <span className="absolute left-0 -bottom-1 w-0 h-[2px] bg-cyan-400 transition-all duration-300 group-hover:w-full"></span>
             </a>
           </div>
 
-          <Link
-            to="/login"
-            className="text-white hover:text-cyan-400 transition duration-300 font-semibold"
-          >
-            Login
-          </Link>
+          {/* Right Side */}
 
-          <Link
-            to="/signup"
-            className="bg-cyan-500 hover:bg-cyan-400 text-black px-5 py-3 rounded-2xl font-bold transition duration-300 shadow-lg shadow-cyan-500/20 hover:scale-105"
+          <div className="hidden md:flex items-center gap-5">
+            {/* AI Badge */}
+
+            <div className="px-4 py-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 text-cyan-300 text-sm font-semibold animate-pulse">
+              ✨ AI Powered
+            </div>
+
+            {/* Login */}
+            {userName ? (
+              <div className="flex items-center gap-3 bg-white/5 px-5 py-3 rounded-2xl">
+                👤 {userName}
+              </div>
+            ) : (
+              <Link to="/auth" className="text-white hover:text-cyan-400">
+                Login
+              </Link>
+            )}
+
+            {/* CTA Button */}
+
+            <Link
+              to="/auth"
+              className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:scale-105 hover:shadow-cyan-500/40 shadow-2xl text-black px-7 py-3 rounded-2xl font-black text-lg transition duration-300"
+            >
+              Get Started 🚀
+            </Link>
+          </div>
+
+          {/* Mobile Button */}
+
+          <button
+            onClick={() => setMobileMenu(!mobileMenu)}
+            className="md:hidden text-4xl text-white"
           >
-            Get Started
-          </Link>
+            ☰
+          </button>
         </div>
       </nav>
 
       {/* Hero Section */}
+
       <section className="relative px-6 md:px-10 pt-24 pb-20 text-center">
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-cyan-400/30 bg-cyan-500/10 text-cyan-300 text-sm md:text-base mb-8">
@@ -166,6 +228,26 @@ export default function App() {
             <br />
             With AI Guidance
           </h1>
+
+          <TypeAnimation
+            sequence={[
+              "AI Career Guidance 🚀",
+              2000,
+
+              "Personalized Roadmaps 🤖",
+              2000,
+
+              "Internship Preparation 💼",
+              2000,
+
+              "Resume Analysis 📄",
+              2000,
+            ]}
+            wrapper="span"
+            speed={50}
+            repeat={Infinity}
+            className="block mt-6 text-cyan-400 text-2xl md:text-4xl font-bold"
+          />
 
           <p className="mt-8 text-lg md:text-2xl text-gray-400 leading-relaxed max-w-4xl mx-auto">
             WaveSights helps students and graduates discover career paths,
@@ -184,6 +266,164 @@ export default function App() {
               Explore Features
             </button>
           </div>
+
+          {/* Ultra Modern 3D Hero Section */}
+
+          <div className="relative mt-24 flex justify-center items-center">
+            {/* Massive Glow Effects */}
+
+            <div className="absolute w-[900px] h-[900px] bg-cyan-500/10 rounded-full blur-[180px]"></div>
+
+            <div className="absolute top-20 left-20 w-[300px] h-[300px] bg-blue-500/20 rounded-full blur-[120px] animate-pulse"></div>
+
+            <div className="absolute bottom-10 right-10 w-[250px] h-[250px] bg-purple-500/20 rounded-full blur-[100px] animate-pulse"></div>
+
+            {/* Main 3D Container */}
+
+            <div className="relative max-w-7xl w-full">
+              {/* Floating AI Orb */}
+
+              <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full bg-gradient-to-br from-cyan-400 to-blue-600 blur-2xl opacity-70 animate-pulse"></div>
+
+              {/* Main Glass Card */}
+
+              <div className="relative bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[50px] overflow-hidden shadow-[0_0_80px_rgba(0,255,255,0.08)]">
+                {/* Grid Overlay */}
+
+                <div className="absolute inset-0 opacity-10">
+                  <div className="w-full h-full bg-[linear-gradient(rgba(255,255,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.1)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+                </div>
+
+                <div className="relative grid grid-cols-1 lg:grid-cols-2 items-center gap-10 p-10 md:p-20">
+                  {/* LEFT SIDE */}
+
+                  <div className="relative z-10">
+                    {/* AI Badge */}
+
+                    <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-sm font-semibold mb-8 shadow-lg shadow-cyan-500/10">
+                      <div className="w-3 h-3 rounded-full bg-cyan-400 animate-ping"></div>
+                      AI Powered Career Intelligence
+                    </div>
+
+                    {/* Heading */}
+
+                    <h2 className="text-5xl md:text-7xl font-black leading-[1.05] tracking-tight">
+                      The Future Of
+                      <span className="block bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-500 bg-clip-text text-transparent">
+                        Career Growth
+                      </span>
+                    </h2>
+
+                    {/* Description */}
+
+                    <p className="mt-8 text-gray-400 text-lg md:text-xl leading-relaxed max-w-2xl">
+                      Discover personalized AI roadmaps, internships, skill
+                      analysis, mock interviews, and future career opportunities
+                      with an immersive next-generation platform.
+                    </p>
+
+                    {/* Buttons */}
+
+                    <div className="mt-10 flex flex-wrap gap-5">
+                      <Link
+                        to="/auth"
+                        className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:scale-105 hover:shadow-cyan-500/40 shadow-2xl text-black px-8 py-4 rounded-2xl font-black text-lg transition duration-300"
+                      >
+                        Launch Career 🚀
+                      </Link>
+
+                      <button className="bg-white/5 border border-white/10 hover:border-cyan-400 hover:bg-cyan-500/10 px-8 py-4 rounded-2xl text-lg transition duration-300">
+                        Explore AI
+                      </button>
+                    </div>
+
+                    {/* Floating Stats */}
+
+                    <div className="mt-14 grid grid-cols-3 gap-5">
+                      <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-5 hover:-translate-y-1 transition duration-300">
+                        <h3 className="text-4xl font-black text-cyan-400">
+                          10K+
+                        </h3>
+
+                        <p className="text-gray-400 mt-2">Students</p>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-5 hover:-translate-y-1 transition duration-300">
+                        <h3 className="text-4xl font-black text-cyan-400">
+                          500+
+                        </h3>
+
+                        <p className="text-gray-400 mt-2">Roadmaps</p>
+                      </div>
+
+                      <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-5 hover:-translate-y-1 transition duration-300">
+                        <h3 className="text-4xl font-black text-cyan-400">
+                          AI
+                        </h3>
+
+                        <p className="text-gray-400 mt-2">Powered</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* RIGHT SIDE */}
+
+                  <div className="relative flex justify-center items-center min-h-[600px]">
+                    {/* Rotating Rings */}
+
+                    <div className="absolute w-[500px] h-[500px] border border-cyan-400/20 rounded-full animate-spin [animation-duration:20s]"></div>
+
+                    <div className="absolute w-[400px] h-[400px] border border-blue-400/20 rounded-full animate-spin [animation-duration:15s]"></div>
+
+                    <div className="absolute w-[300px] h-[300px] border border-purple-400/20 rounded-full animate-spin [animation-duration:10s]"></div>
+
+                    {/* Center AI Core */}
+
+                    <div className="relative w-52 h-52 rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 shadow-[0_0_100px_rgba(0,255,255,0.4)] flex items-center justify-center">
+                      <div className="absolute inset-4 rounded-full bg-[#020817] flex items-center justify-center text-7xl">
+                        🤖
+                      </div>
+                    </div>
+
+                    {/* Floating Cards */}
+
+                    <div className="absolute top-10 left-0 bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl px-6 py-5 shadow-2xl rotate-[-8deg] hover:rotate-0 transition duration-500">
+                      <h4 className="font-bold text-xl">AI Roadmaps</h4>
+
+                      <p className="text-gray-400 mt-2 text-sm">
+                        Personalized Learning Paths
+                      </p>
+                    </div>
+
+                    <div className="absolute bottom-20 left-10 bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl px-6 py-5 shadow-2xl rotate-[6deg] hover:rotate-0 transition duration-500">
+                      <h4 className="font-bold text-xl">Mock Interviews</h4>
+
+                      <p className="text-gray-400 mt-2 text-sm">
+                        AI Voice Feedback
+                      </p>
+                    </div>
+
+                    <div className="absolute top-24 right-0 bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl px-6 py-5 shadow-2xl rotate-[8deg] hover:rotate-0 transition duration-500">
+                      <h4 className="font-bold text-xl">Resume AI</h4>
+
+                      <p className="text-gray-400 mt-2 text-sm">
+                        ATS Optimization
+                      </p>
+                    </div>
+
+                    <div className="absolute bottom-10 right-10 bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl px-6 py-5 shadow-2xl rotate-[-5deg] hover:rotate-0 transition duration-500">
+                      <h4 className="font-bold text-xl">Skill Analysis</h4>
+
+                      <p className="text-gray-400 mt-2 text-sm">
+                        AI Recommendations
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
         </div>
       </section>
 
@@ -232,22 +472,15 @@ export default function App() {
                 {item.description}
               </p>
 
-             <Link
-  to="/auth"
-
-  onClick={() => {
-    localStorage.setItem(
-      "userType",
-      item.title
-    );
-  }}
-
-  className="block w-full text-center bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black px-6 py-3 rounded-2xl font-bold transition duration-300"
->
-
-  Get Started 🚀
-
-</Link>
+              <Link
+                to="/auth"
+                onClick={() => {
+                  localStorage.setItem("userType", item.title);
+                }}
+                className="block w-full text-center bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black px-6 py-3 rounded-2xl font-bold transition duration-300"
+              >
+                Get Started 🚀
+              </Link>
             </div>
           ))}
         </div>

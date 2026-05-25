@@ -81,7 +81,15 @@ if (userSnap.exists()) {
         savedProgress
       );
 
-      setCompletedSteps(savedProgress);
+      const filteredProgress =
+  savedProgress.filter(
+    (step) =>
+      selectedRoadmap.includes(step)
+  );
+
+setCompletedSteps(
+  filteredProgress
+);
 
     } catch (error) {
       console.log(error);
@@ -533,18 +541,21 @@ if (userSnap.exists()) {
   {/* Progress */}
   <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
 
-    <h2 className="text-4xl font-black text-cyan-400">
+   <h2 className="text-4xl font-black text-cyan-400">
 
-      {selectedRoadmap.length > 0
-        ? Math.round(
-            (completedSteps.length /
-              selectedRoadmap.length) *
-              100
-          )
-        : 0}
-      %
+  {selectedRoadmap.length > 0
+    ? Math.min(
+        Math.round(
+          (completedSteps.length /
+            selectedRoadmap.length) *
+            100
+        ),
+        100
+      )
+    : 0}
+  %
 
-    </h2>
+</h2>
 
     <p className="text-gray-400 mt-2">
       Roadmap Progress
