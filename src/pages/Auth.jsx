@@ -52,14 +52,15 @@ export default function Auth() {
 
           createdAt: new Date(),
         });
+
         navigate("/onboarding/user-type");
       } else {
         navigate("/dashboard");
       }
     } catch (error) {
-      console.log(error);
+      console.log("FULL ERROR:", error);
 
-      alert("Google Sign In Failed");
+      alert(error.code + "\n" + error.message);
     } finally {
       setLoading(false);
     }
