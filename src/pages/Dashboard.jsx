@@ -4,11 +4,9 @@ import DailyAITasks from "../components/DailyAITasks";
 import roadmapData from "../data/roadmapData";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
+import DashboardSidebar from "../components/DashboardSidebar";
 
-import {
-  doc,
-  getDoc,
-} from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 
 import { db } from "../firebase";
 
@@ -30,75 +28,46 @@ export default function Dashboard() {
 
   const skillLevel = localStorage.getItem("skillLevel")?.toLowerCase();
   const [completedSteps, setCompletedSteps] = useState([]);
-  const [learningStreak, setLearningStreak] =
-  useState(1);
+  const [learningStreak, setLearningStreak] = useState(1);
 
-  const userId =
-  localStorage.getItem("userId") ||
-  "demoUser";
+  const userId = localStorage.getItem("userId") || "demoUser";
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const selectedRoadmap = roadmapData[interest]?.[skillLevel] || [];
 
   useEffect(() => {
+    const fetchProgress = async () => {
+      try {
+        const savedProgress = await loadProgress(userId);
+        await updateLearningStreak(userId);
+        const userRef = doc(db, "users", userId);
 
-  const fetchProgress = async () => {
+        const userSnap = await getDoc(userRef);
 
-    try {
+        if (userSnap.exists()) {
+          setLearningStreak(userSnap.data().learningStreak || 1);
 
-      const savedProgress =
-        await loadProgress(userId);
-        await updateLearningStreak(
-  userId
-);
-const userRef = doc(
-  db,
-  "users",
-  userId
-);
+          localStorage.setItem(
+            "firebaseStreak",
+            userSnap.data().learningStreak || 1,
+          );
+        }
 
-const userSnap =
-  await getDoc(userRef);
+        console.log("Loaded Progress:", savedProgress);
 
-if (userSnap.exists()) {
+        const filteredProgress = savedProgress.filter((step) =>
+          selectedRoadmap.includes(step),
+        );
 
-  setLearningStreak(
-    userSnap.data()
-      .learningStreak || 1
-  );
+        setCompletedSteps(filteredProgress);
+      } catch (error) {
+        console.log(error);
+      }
+    };
 
-  localStorage.setItem(
-  "firebaseStreak",
-  userSnap.data()
-    .learningStreak || 1
-);
-
-}
-
-      console.log(
-        "Loaded Progress:",
-        savedProgress
-      );
-
-      const filteredProgress =
-  savedProgress.filter(
-    (step) =>
-      selectedRoadmap.includes(step)
-  );
-
-setCompletedSteps(
-  filteredProgress
-);
-
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  fetchProgress();
-
-}, [userId]);
+    fetchProgress();
+  }, [userId]);
 
   console.log(careerGoal);
 
@@ -428,21 +397,31 @@ setCompletedSteps(
           ✕
         </button>
 
-        <h1 className="text-4xl font-black text-cyan-400 mb-10">WaveSights</h1>
+        <div className="flex items-center gap-3 mb-10">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-3xl shadow-lg shadow-cyan-500/30">
+            🚀
+          </div>
+
+          <div>
+            <h1 className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+              WaveSights
+            </h1>
+
+            <p className="text-gray-400 text-sm">AI Career Platform</p>
+          </div>
+        </div>
 
         <div className="space-y-4">
-          <button className="w-full text-left px-5 py-4 rounded-2xl bg-cyan-500 text-black font-bold">
+          <button className="w-full text-left px-5 py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold shadow-xl shadow-cyan-500/20">
             Dashboard
           </button>
 
           <Link
-  to="/profile"
-  className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
->
-
-  👤 Profile
-
-</Link>
+            to="/profile"
+            className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
+          >
+            👤 Profile
+          </Link>
 
           <button
             onClick={() => (window.location.href = "/ai-roadmap")}
@@ -452,13 +431,11 @@ setCompletedSteps(
           </button>
 
           <Link
-  to="/leaderboard"
-  className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
->
-
-  🏆 Leaderboard
-
-</Link>
+            to="/leaderboard"
+            className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
+          >
+            🏆 Leaderboard
+          </Link>
 
           <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300">
             Skill Tracker
@@ -469,18 +446,18 @@ setCompletedSteps(
           </button>
 
           <Link
-  to="/resume-analyzer"
-  className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
->
-  Resume Analyzer
-</Link>
+            to="/resume-analyzer"
+            className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
+          >
+            Resume Analyzer
+          </Link>
 
-<Link
-  to="/mock-interview"
-  className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
->
-  AI Mock Interview
-</Link>
+          <Link
+            to="/mock-interview"
+            className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
+          >
+            AI Mock Interview
+          </Link>
           <button
             onClick={() => (window.location.href = "/ai-chat")}
             className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
@@ -488,6 +465,17 @@ setCompletedSteps(
             WaveSights AI
           </button>
         </div>
+
+        <button
+          onClick={() => {
+            localStorage.clear();
+
+            window.location.href = "/";
+          }}
+          className="mt-10 w-full bg-red-500/10 border border-red-400/20 hover:bg-red-500 hover:text-white text-red-300 py-4 rounded-2xl font-bold transition duration-300"
+        >
+          Logout
+        </button>
       </aside>
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between w-full p-5 border-b border-white/10 bg-[#020817]">
@@ -515,69 +503,95 @@ setCompletedSteps(
             </p>
           </div>
 
-          <div className="w-full md:w-auto bg-white/5 border border-white/10 px-6 py-4 rounded-2xl">
-            <p className="text-gray-400 text-sm">Current Goal</p>
-            <h2 className="text-xl md:text-2xl font-bold text-cyan-400 break-words">
-              {careerGoal}
-            </h2>
-          </div>
+          <div className="flex flex-col gap-4 w-full md:w-auto">
+
+  {/* User Card */}
+
+  <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 flex items-center gap-4">
+
+    <img
+      src={localStorage.getItem("photo")}
+      alt="profile"
+      className="w-14 h-14 rounded-full border border-cyan-400/20"
+    />
+
+    <div>
+
+      <h3 className="font-bold text-lg">
+
+        {localStorage.getItem("name")}
+
+      </h3>
+
+      <p className="text-gray-400 text-sm">
+
+        AI Learner
+
+      </p>
+
+    </div>
+
+  </div>
+
+  {/* Goal Card */}
+
+  <div className="bg-white/5 border border-white/10 px-6 py-4 rounded-2xl">
+
+    <p className="text-gray-400 text-sm">
+
+      Current Goal
+
+    </p>
+
+    <h2 className="text-xl md:text-2xl font-bold text-cyan-400 break-words">
+
+      {careerGoal}
+
+    </h2>
+
+  </div>
+
+</div>
         </div>
 
         {/* Dynamic Stats */}
-<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+          {/* Skills Learned */}
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+            <h2 className="text-4xl font-black text-cyan-400">
+              {completedSteps.length}
+            </h2>
 
-  {/* Skills Learned */}
-  <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+            <p className="text-gray-400 mt-2">Skills Learned</p>
+          </div>
 
-    <h2 className="text-4xl font-black text-cyan-400">
-      {completedSteps.length}
-    </h2>
+          {/* Progress */}
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+            <h2 className="text-4xl font-black text-cyan-400">
+              {selectedRoadmap.length > 0
+                ? Math.min(
+                    Math.round(
+                      (completedSteps.length / selectedRoadmap.length) * 100,
+                    ),
+                    100,
+                  )
+                : 0}
+              %
+            </h2>
 
-    <p className="text-gray-400 mt-2">
-      Skills Learned
-    </p>
-  </div>
+            <p className="text-gray-400 mt-2">Roadmap Progress</p>
+          </div>
 
-  {/* Progress */}
-  <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+          {/* Learning Streak */}
 
-   <h2 className="text-4xl font-black text-cyan-400">
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-6">
+            <h2 className="text-4xl font-black text-cyan-400">
+              🔥 {learningStreak}
+            </h2>
 
-  {selectedRoadmap.length > 0
-    ? Math.min(
-        Math.round(
-          (completedSteps.length /
-            selectedRoadmap.length) *
-            100
-        ),
-        100
-      )
-    : 0}
-  %
-
-</h2>
-
-    <p className="text-gray-400 mt-2">
-      Roadmap Progress
-    </p>
-  </div>
-
-  {/* Learning Streak */}
-
-<div className="bg-white/5 border border-white/10 rounded-3xl p-6">
-
-  <h2 className="text-4xl font-black text-cyan-400">
-
-    🔥 {learningStreak}
-
-  </h2>
-
-  <p className="text-gray-400 mt-2">
-    Day Learning Streak
-  </p>
-</div>
-
-</div>
+            <p className="text-gray-400 mt-2">Day Learning Streak</p>
+          </div>
+        </div>
 
         {/* Roadmap Cards */}
         <section className="mb-14">
@@ -613,28 +627,22 @@ setCompletedSteps(
 
         {/* AI Motivation Section */}
 
-<div className="mb-10 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-6 md:p-8">
+        <div className="mb-10 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-6 md:p-8">
+          <h2 className="text-2xl md:text-4xl font-black text-cyan-400 mb-4">
+            🔥 AI Progress Insight
+          </h2>
 
-  <h2 className="text-2xl md:text-4xl font-black text-cyan-400 mb-4">
-    🔥 AI Progress Insight
-  </h2>
-
-  <p className="text-lg md:text-xl text-gray-200 leading-relaxed">
-
-    You completed{" "}
-
-    <span className="text-cyan-400 font-bold">
-      {completedSteps.length}
-    </span>
-
-    {" "}roadmap steps.
-
-    {completedSteps.length > 0
-      ? " Keep pushing toward your dream career 🚀"
-      : " Start your first roadmap step today 🚀"}
-
-  </p>
-</div>
+          <p className="text-lg md:text-xl text-gray-200 leading-relaxed">
+            You completed{" "}
+            <span className="text-cyan-400 font-bold">
+              {completedSteps.length}
+            </span>{" "}
+            roadmap steps.
+            {completedSteps.length > 0
+              ? " Keep pushing toward your dream career 🚀"
+              : " Start your first roadmap step today 🚀"}
+          </p>
+        </div>
 
         {/* Recommendations */}
         <section>

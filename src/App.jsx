@@ -18,6 +18,7 @@ import GoalSelection from "./pages/onboarding/GoalSelection";
 import SkillLevel from "./pages/onboarding/SkillLevel";
 import TimeCommitment from "./pages/onboarding/TimeCommitment";
 import FloatingAI from "./components/FloatingAI";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
   return (
@@ -29,7 +30,16 @@ function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<Signup />} />
-      <Route path="/dashboard" element={<Dashboard />} />
+     <Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute>
+
+      <Dashboard />
+
+    </ProtectedRoute>
+  }
+/>
       <Route path="/ai-roadmap" element={<AIRoadmap />} />
       <Route path="/auth" element={<Auth />} />
 
