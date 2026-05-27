@@ -3,11 +3,48 @@ import { TypeAnimation } from "react-type-animation";
 import { useState, useEffect } from "react";
 import Loader from "./components/Loader";
 import { motion } from "framer-motion";
+import logo from "./assets/logo.png";
+
+// import { useState } from "react";
+
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+
+import { db } from "./firebase";
 
 export default function App() {
   const userName = localStorage.getItem("name");
+  const [subscriberEmail, setSubscriberEmail] = useState("");
+
+  const [joining, setJoining] = useState(false);
+
+  const joinNewsletter = async () => {
+    if (!subscriberEmail) {
+      return alert("Enter email");
+    }
+
+    try {
+      setJoining(true);
+
+      await addDoc(collection(db, "subscribers"), {
+        email: subscriberEmail,
+
+        createdAt: serverTimestamp(),
+      });
+
+      alert("Joined successfully 🚀");
+
+      setSubscriberEmail("");
+    } catch (error) {
+      console.log(error);
+
+      alert("Something went wrong");
+    } finally {
+      setJoining(false);
+    }
+  };
 
   const [mobileMenu, setMobileMenu] = useState(false);
+  const [logoClicks, setLogoClicks] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -16,6 +53,20 @@ export default function App() {
     }, 3000);
 
     return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === "A") {
+        window.location.href = "/admin";
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyPress);
+    };
   }, []);
 
   const journeys = [
@@ -143,20 +194,34 @@ export default function App() {
         )}
 
         <nav className="fixed top-4 left-1/2 -translate-x-1/2 w-[95%] rounded-3xl z-50 backdrop-blur-2xl bg-black/30 border-b border-white/10 shadow-2xl">
-          <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10 py-4">
+          <div className="max-w-7xl mx-auto flex items-center justify-between px-6 md:px-10 py-2">
             {/* Logo */}
 
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-2xl shadow-lg shadow-cyan-500/30">
-                🚀
-              </div>
+            <div
+              className="flex items-center gap-5 cursor-pointer"
+              onClick={() => {
+                const newCount = logoClicks + 1;
 
+                setLogoClicks(newCount);
+
+                if (newCount >= 5) {
+                  window.location.href = "/admin";
+
+                  setLogoClicks(0);
+                }
+              }}
+            >
+              <img
+                src={logo}
+                alt="logo"
+                className="w-14 h-14 object-contain drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]"
+              />
               <div>
                 <h1 className="text-3xl md:text-4xl font-black tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                   WaveSights
                 </h1>
 
-                <p className="text-gray-400 text-sm md:text-base">
+                <p className="text-gray-400 text-sm md:text-sm">
                   Your AI Career Mentor
                 </p>
               </div>
@@ -201,43 +266,29 @@ export default function App() {
 
               {/* Login */}
               {userName ? (
+                <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/10">
+                  <img
+                    src={localStorage.getItem("photo")}
+                    alt="profile"
+                    className="w-10 h-10 rounded-full"
+                  />
 
-  <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/10">
+                  <div className="flex flex-col">
+                    <span className="font-semibold">{userName}</span>
 
-    <img
-      src={localStorage.getItem("photo")}
-      alt="profile"
-      className="w-10 h-10 rounded-full"
-    />
+                    <button
+                      onClick={() => {
+                        localStorage.clear();
 
-    <div className="flex flex-col">
-
-      <span className="font-semibold">
-        {userName}
-      </span>
-
-      <button
-
-        onClick={() => {
-
-          localStorage.clear();
-
-          window.location.href = "/";
-
-        }}
-
-        className="text-xs text-red-400 hover:text-red-300 text-left"
-      >
-
-        Logout
-
-      </button>
-
-    </div>
-
-  </div>
-
-) : (
+                        window.location.href = "/";
+                      }}
+                      className="text-xs text-red-400 hover:text-red-300 text-left"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                </div>
+              ) : (
                 <Link to="/auth" className="text-white hover:text-cyan-400">
                   Login
                 </Link>
@@ -268,7 +319,7 @@ export default function App() {
 
         <section className="relative px-6 md:px-10 pt-24 pb-20 text-center">
           <div className="max-w-6xl mx-auto relative z-10">
-            <div className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-cyan-400/30 bg-cyan-500/10 text-cyan-300 text-sm md:text-base mb-8">
+            <div className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-cyan-400/30 bg-cyan-500/10 text-cyan-300 text-sm md:text-base mb-8 mt-10">
               ✨ AI-Powered Career Intelligence
             </div>
 
@@ -346,7 +397,7 @@ export default function App() {
                   <div className="relative grid grid-cols-1 lg:grid-cols-2 items-center gap-10 p-8 md:p-14">
                     {/* LEFT SIDE */}
 
-                    <div className="relative z-10">
+                    <div className="relative z-10 pt-40">
                       {/* AI Badge */}
 
                       <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-sm font-semibold mb-8 shadow-lg shadow-cyan-500/10">
@@ -759,32 +810,42 @@ export default function App() {
         </section>
 
         {/* Footer */}
+
+        <div className="h-px w-full bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent"></div>
         <footer className="border-t border-white/10 px-6 md:px-10 py-16 text-gray-400 bg-black/20 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {/* Brand Section */}
             <div>
-              <h2 className="text-4xl font-black text-cyan-400 mb-4">
-                WaveSights
-              </h2>
+              <div className="flex items-center gap-4 mb-5">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-3xl shadow-lg shadow-cyan-500/30">
+                  🚀
+                </div>
+
+                <div>
+                  <h2 className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
+                    WaveSights
+                  </h2>
+
+                  <p className="text-gray-500 text-sm">
+                    AI Career Intelligence
+                  </p>
+                </div>
+              </div>
 
               <p className="leading-relaxed text-gray-400 text-lg">
                 AI-powered career guidance platform helping students and
                 graduates discover the right future path.
               </p>
 
-              <div className="flex gap-4 mt-6 text-2xl">
-                <button className="hover:scale-110 transition duration-300 hover:text-cyan-400">
-                  🌐
-                </button>
-                <button className="hover:scale-110 transition duration-300 hover:text-cyan-400">
-                  📸
-                </button>
-                <button className="hover:scale-110 transition duration-300 hover:text-cyan-400">
-                  💼
-                </button>
-                <button className="hover:scale-110 transition duration-300 hover:text-cyan-400">
-                  🧠
-                </button>
+              <div className="flex gap-4 mt-8">
+                {["🌐", "📸", "💼", "🎥"].map((icon, index) => (
+                  <button
+                    key={index}
+                    className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 hover:border-cyan-400 hover:bg-cyan-500/10 text-2xl flex items-center justify-center transition duration-300 hover:scale-110"
+                  >
+                    {icon}
+                  </button>
+                ))}
               </div>
             </div>
 
@@ -863,17 +924,50 @@ export default function App() {
                 <p>🌍 India</p>
                 <p>🤖 AI Career Platform</p>
 
-                <button className="mt-4 bg-cyan-500 hover:bg-cyan-400 text-black px-6 py-3 rounded-2xl font-bold transition duration-300 hover:scale-105">
+                <Link
+                  to="/contact"
+                  className="inline-block mt-4 bg-cyan-500 hover:bg-cyan-400 text-black px-6 py-3 rounded-2xl font-bold transition duration-300 hover:scale-105"
+                >
                   Contact Us
-                </button>
+                </Link>
               </div>
+            </div>
+          </div>
+
+          <div className="mt-20 mb-16 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-[35px] p-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div>
+              <h2 className="text-3xl md:text-4xl font-black">
+                Stay Updated 🚀
+              </h2>
+
+              <p className="text-gray-400 mt-3 text-lg">
+                Get AI career tips, roadmap updates, and future opportunities.
+              </p>
+            </div>
+
+            <div className="flex w-full lg:w-auto gap-4">
+              <input
+                type="email"
+                placeholder="Enter your email"
+                value={subscriberEmail}
+                onChange={(e) => setSubscriberEmail(e.target.value)}
+                className="bg-white/5 border border-white/10 px-6 py-4 rounded-2xl outline-none focus:border-cyan-400 w-full lg:w-[320px]"
+              />
+
+              <button
+                onClick={joinNewsletter}
+                disabled={joining}
+                className="bg-cyan-500 hover:bg-cyan-400 text-black px-8 py-4 rounded-2xl font-bold transition duration-300 hover:scale-105"
+              >
+                {joining ? "Joining..." : "Join"}
+              </button>
             </div>
           </div>
 
           {/* Bottom Footer */}
           <div className="border-t border-white/10 mt-14 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-sm md:text-base">
             <p className="text-gray-500">
-              © 2026 WaveSights. All rights reserved.
+              © 2026 WaveSights — Built with AI for future careers 🚀
             </p>
 
             <div className="flex gap-6 text-gray-400">

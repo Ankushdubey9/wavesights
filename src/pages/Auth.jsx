@@ -219,6 +219,11 @@ export default function Auth() {
       const user =
         result.user;
 
+        localStorage.setItem(
+  "email",
+  user.email
+);
+
       localStorage.setItem(
         "name",
         user.displayName
@@ -269,12 +274,11 @@ export default function Auth() {
           <h1 className="text-7xl font-black leading-tight">
 
             Welcome To
-
-            <span className="block bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
-
-              WaveSights
-
-            </span>
+<img  
+  src={logo}  
+  alt="logo"  
+  className="w-24 h-24 mx-auto object-contain mb-6"  
+/>
 
           </h1>
 

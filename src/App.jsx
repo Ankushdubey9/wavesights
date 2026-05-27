@@ -19,6 +19,8 @@ import SkillLevel from "./pages/onboarding/SkillLevel";
 import TimeCommitment from "./pages/onboarding/TimeCommitment";
 import FloatingAI from "./components/FloatingAI";
 import ProtectedRoute from "./components/ProtectedRoute";
+import Contact from "./pages/Contact";
+import Admin from "./pages/Admin";
 
 function App() {
   return (
@@ -63,6 +65,10 @@ function App() {
       <Route path="/onboarding/time" element={<TimeCommitment />} />
 
       <Route path="/ai-chat" element={<AIChat />} />
+
+
+      <Route path="/contact" element={<Contact />} />
+      <Route path="/admin" element={<Admin />} />
     </Routes>
 </>
   );

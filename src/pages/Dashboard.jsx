@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import DashboardSidebar from "../components/DashboardSidebar";
 
 import { doc, getDoc } from "firebase/firestore";
+import logo from "../assets/logo.png";
 
 import { db } from "../firebase";
 
@@ -398,9 +399,11 @@ export default function Dashboard() {
         </button>
 
         <div className="flex items-center gap-3 mb-10">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-3xl shadow-lg shadow-cyan-500/30">
-            🚀
-          </div>
+        <img  
+  src={logo}  
+  alt="logo"  
+  className="w-16 h-16 object-contain"  
+/>
 
           <div>
             <h1 className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
