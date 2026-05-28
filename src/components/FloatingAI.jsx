@@ -106,7 +106,7 @@ Keep answers short and practical.
         onClick={() =>
           setOpen(!open)
         }
-        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-cyan-400 text-black text-3xl shadow-2xl hover:scale-110 transition-all"
+        className="fixed bottom-24 right-6 z-50 w-16 h-16 rounded-full bg-cyan-400 text-black text-3xl shadow-2xl hover:scale-110 transition-all"
       >
         🤖
       </button>

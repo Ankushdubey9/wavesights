@@ -212,10 +212,10 @@ export default function App() {
               }}
             >
               <img
-                src={logo}
-                alt="logo"
-                className="w-14 h-14 object-contain drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]"
-              />
+  src={logo}
+  alt="WaveSights Logo"
+  className="w-14 h-14 object-contain drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]"
+/>
               <div>
                 <h1 className="text-3xl md:text-4xl font-black tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                   WaveSights
@@ -267,11 +267,10 @@ export default function App() {
               {/* Login */}
               {userName ? (
                 <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/10">
-                  <img
-                    src={localStorage.getItem("photo")}
-                    alt="profile"
-                    className="w-10 h-10 rounded-full"
-                  />
+                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 flex items-center justify-center text-xl font-black text-white shadow-lg shadow-cyan-500/30 border border-white/10">
+                    {localStorage.getItem("name")?.charAt(0)?.toUpperCase() ||
+                      "U"}
+                  </div>
 
                   <div className="flex flex-col">
                     <span className="font-semibold">{userName}</span>

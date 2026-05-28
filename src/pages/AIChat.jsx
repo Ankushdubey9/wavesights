@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import ReactMarkdown from "react-markdown";
 
 export default function AIChat() {
   const [messages, setMessages] = useState(() => {
@@ -43,6 +44,12 @@ export default function AIChat() {
       const skillLevel = localStorage.getItem("skillLevel") || "";
 
       const stream = localStorage.getItem("educationStream") || "";
+      const xp = localStorage.getItem("xp") || 0;
+
+const streak = localStorage.getItem("streak") || 0;
+
+const completedSkills =
+  JSON.parse(localStorage.getItem("completedSkills")) || [];
 
       const timeCommitment =
         localStorage.getItem("timeCommitment") || "";
@@ -64,6 +71,9 @@ User Profile:
 - Goal: ${goal}
 - Skill Level: ${skillLevel}
 - Daily Time Commitment: ${timeCommitment}
+- XP: ${xp}
+- Learning Streak: ${streak}
+- Completed Skills: ${completedSkills.join(", ")}
 
 Previous Conversation:
 ${conversationHistory}
@@ -85,6 +95,11 @@ STRICT RESPONSE RULES:
 - Use markdown formatting.
 - Avoid robotic tone.
 - Make answers feel like ChatGPT premium responses.
+ALWAYS provide:
+- next learning step
+- project suggestion
+- resource suggestion
+- interview preparation tip
 
 GOOD RESPONSE EXAMPLE:
 
@@ -109,7 +124,7 @@ Now answer the user's question properly.
       const response = await axios.post(
         "https://openrouter.ai/api/v1/chat/completions",
         {
-          model: "openai/gpt-3.5-turbo",
+          model: "deepseek/deepseek-chat",
           messages: [
             {
               role: "system",
@@ -216,19 +231,56 @@ Now answer the user's question properly.
                   : "bg-white/5 border border-white/10 text-white"
               }`}
             >
-              {message.text}
+             <ReactMarkdown>
+  {message.text}
+</ReactMarkdown>
             </div>
           </div>
         ))}
 
         {loading && (
-          <div className="flex justify-start">
-            <div className="bg-white/5 border border-white/10 px-6 py-5 rounded-3xl">
-              WaveSights AI is thinking...
-            </div>
-          </div>
-        )}
+  <div className="flex justify-start">
+
+    <div className="bg-white/5 border border-white/10 px-6 py-5 rounded-3xl flex items-center gap-2">
+
+      <span className="text-cyan-400 font-semibold">
+        WaveSights AI
+      </span>
+
+      <div className="flex gap-1 text-cyan-400 text-2xl">
+
+        <span className="animate-bounce">•</span>
+
+        <span className="animate-bounce delay-100">•</span>
+
+        <span className="animate-bounce delay-200">•</span>
+
       </div>
+
+    </div>
+
+  </div>
+)}
+      </div>
+
+      <div className="flex flex-wrap gap-3 mb-4">
+
+  {[
+    "Frontend Roadmap",
+    "Resume Review",
+    "Interview Prep",
+    "Project Ideas",
+  ].map((item) => (
+    <button
+      key={item}
+      onClick={() => setInput(item)}
+      className="bg-white/5 border border-white/10 px-4 py-2 rounded-xl hover:border-cyan-400"
+    >
+      {item}
+    </button>
+  ))}
+
+</div>
 
       {/* Input */}
       <div className="border-t border-white/10 p-4 md:p-6 sticky bottom-0 bg-[#020817]">

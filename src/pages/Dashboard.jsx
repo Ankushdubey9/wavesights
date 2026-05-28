@@ -512,11 +512,14 @@ export default function Dashboard() {
 
   <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 flex items-center gap-4">
 
-    <img
-      src={localStorage.getItem("photo")}
-      alt="profile"
-      className="w-14 h-14 rounded-full border border-cyan-400/20"
-    />
+<div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-cyan-500/30 border border-white/10">
+
+  {localStorage
+    .getItem("name")
+    ?.charAt(0)
+    ?.toUpperCase() || "U"}
+
+</div>
 
     <div>
 
