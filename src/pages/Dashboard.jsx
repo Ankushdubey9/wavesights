@@ -467,6 +467,12 @@ export default function Dashboard() {
           >
             WaveSights AI
           </button>
+          <Link
+  to="/"
+  className="block w-full text-center bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black py-4 rounded-2xl font-bold transition duration-300"
+>
+  🏠 Back to Home
+</Link>
         </div>
 
         <button

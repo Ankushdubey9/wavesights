@@ -21,6 +21,11 @@ import FloatingAI from "./components/FloatingAI";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Contact from "./pages/Contact";
 import Admin from "./pages/Admin";
+import Privacy from "./pages/Privacy";
+import Terms from "./pages/Terms";
+import Support from "./pages/Support";
+import ExploreCareer from "./pages/ExploreCareer";
+
 
 function App() {
   return (
@@ -65,10 +70,19 @@ function App() {
       <Route path="/onboarding/time" element={<TimeCommitment />} />
 
       <Route path="/ai-chat" element={<AIChat />} />
+     
 
 
       <Route path="/contact" element={<Contact />} />
       <Route path="/admin" element={<Admin />} />
+
+      <Route path="/privacy" element={<Privacy />} />
+<Route path="/terms" element={<Terms />} />
+<Route path="/support" element={<Support />} />
+<Route
+  path="/explore-careers"
+  element={<ExploreCareer />}
+/>
     </Routes>
 </>
   );

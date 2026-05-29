@@ -212,10 +212,10 @@ export default function App() {
               }}
             >
               <img
-  src={logo}
-  alt="WaveSights Logo"
-  className="w-14 h-14 object-contain drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]"
-/>
+                src={logo}
+                alt="WaveSights Logo"
+                className="w-14 h-14 object-contain drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]"
+              />
               <div>
                 <h1 className="text-3xl md:text-4xl font-black tracking-tight bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
                   WaveSights
@@ -354,12 +354,12 @@ export default function App() {
             </p>
 
             <div className="mt-12 flex flex-col sm:flex-row justify-center gap-5">
-              <Link
-                to="/signup"
+              <a
+                href="#journey"
                 className="bg-cyan-500 hover:bg-cyan-400 text-black px-8 py-4 rounded-2xl text-lg font-bold transition duration-300 hover:scale-105 shadow-2xl shadow-cyan-500/20"
               >
                 Start Your Journey
-              </Link>
+              </a>
 
               <button className="border border-white/20 hover:border-cyan-400 hover:bg-white/5 px-8 py-4 rounded-2xl text-lg transition duration-300">
                 Explore Features
@@ -619,15 +619,24 @@ export default function App() {
                   {item.description}
                 </p>
 
-                <Link
-                  to="/auth"
-                  onClick={() => {
-                    localStorage.setItem("userType", item.title);
-                  }}
-                  className="block w-full text-center bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black px-6 py-3 rounded-2xl font-bold transition duration-300"
-                >
-                  Get Started 🚀
-                </Link>
+                <button
+  onClick={() => {
+    const isLoggedIn = localStorage.getItem("email");
+
+    if (isLoggedIn) {
+      localStorage.setItem("previewUserType", item.title);
+
+      window.location.href = "/explore-careers";
+    } else {
+      localStorage.setItem("userType", item.title);
+
+      window.location.href = "/auth";
+    }
+  }}
+  className="block w-full text-center bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black px-6 py-3 rounded-2xl font-bold transition duration-300"
+>
+  Get Started 🚀
+</button>
               </div>
             ))}
           </div>
@@ -728,23 +737,29 @@ export default function App() {
             </h2>
 
             <p className="text-gray-400 text-lg md:text-xl mb-16">
-              Start free and upgrade when you need advanced AI guidance.
+              Start free and unlock advanced AI career guidance as WaveSights
+              grows.
             </p>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
+              {/* FREE PLAN */}
               <div className="bg-white/5 border border-white/10 rounded-3xl p-10 text-left hover:border-cyan-400/30 transition duration-300">
                 <h3 className="text-3xl font-bold mb-4">Free Plan</h3>
+
                 <p className="text-gray-400 mb-8 text-lg">
-                  Perfect for students getting started.
+                  Discover the right career path with AI-powered guidance.
                 </p>
 
                 <h4 className="text-6xl font-black mb-8">₹0</h4>
 
                 <ul className="space-y-5 text-gray-300 mb-10 text-lg">
-                  <li>✔ Basic Career Guidance</li>
-                  <li>✔ Stream Recommendations</li>
-                  <li>✔ Limited AI Access</li>
-                  <li>✔ Career Suggestions</li>
+                  <li>✔ AI Career Assessment</li>
+                  <li>✔ Personalized Career Suggestions</li>
+                  <li>✔ Resume Score Check</li>
+                  <li>✔ 3 Mock Interviews / Month</li>
+                  <li>✔ Career Roadmap Preview</li>
+                  <li>✔ Internship Recommendations</li>
+                  <li>✔ Limited AI Mentor Access</li>
                 </ul>
 
                 <Link
@@ -755,32 +770,43 @@ export default function App() {
                 </Link>
               </div>
 
+              {/* PRO PLAN */}
               <div className="relative bg-cyan-500/10 border border-cyan-400 rounded-3xl p-10 text-left shadow-2xl shadow-cyan-500/10 hover:scale-[1.01] transition duration-300">
                 <div className="absolute top-5 right-5 bg-cyan-400 text-black px-4 py-1 rounded-full text-sm font-black">
-                  MOST POPULAR
+                  ⭐ RECOMMENDED
                 </div>
 
                 <h3 className="text-3xl font-bold mb-4">Pro AI Plan</h3>
+
                 <p className="text-gray-300 mb-8 text-lg">
                   Advanced personalized AI career planning.
                 </p>
 
-                <h4 className="text-6xl font-black mb-8">₹299</h4>
-                <p className="text-gray-400 mb-8">per month</p>
+                <h4 className="text-5xl font-black mb-2">
+                  Free for Early Users
+                </h4>
+
+                <p className="text-gray-400 mb-8">
+                  Join early and unlock premium features at no cost.
+                </p>
 
                 <ul className="space-y-5 text-gray-200 mb-10 text-lg">
-                  <li>✔ Full AI Career Roadmaps</li>
-                  <li>✔ Resume Guidance</li>
+                  <li>🔥 Everything in Free</li>
+                  <li>✔ Unlimited AI Career Mentor</li>
+                  <li>✔ Unlimited Mock Interviews</li>
+                  <li>✔ Complete Career Roadmaps</li>
+                  <li>✔ Resume Optimization & ATS Analysis</li>
+                  <li>✔ Personalized Skill Development Plans</li>
                   <li>✔ Internship Recommendations</li>
-                  <li>✔ Personalized Skill Plans</li>
-                  <li>✔ AI Career Predictions</li>
+                  <li>✔ Progress Tracking Dashboard</li>
+                  <li>✔ Priority Feature Access</li>
                 </ul>
 
                 <Link
                   to="/auth"
                   className="block w-full bg-cyan-400 hover:bg-cyan-300 text-black py-4 rounded-2xl font-bold transition duration-300 hover:scale-[1.02] text-center"
                 >
-                  Upgrade Now
+                  Unlock Premium Free
                 </Link>
               </div>
             </div>
@@ -832,8 +858,9 @@ export default function App() {
               </div>
 
               <p className="leading-relaxed text-gray-400 text-lg">
-                AI-powered career guidance platform helping students and
-                graduates discover the right future path.
+                Helping students and graduates make smarter career decisions
+                through AI-powered guidance, personalized roadmaps, and skill
+                development plans.
               </p>
 
               <div className="flex gap-4 mt-8">
@@ -873,44 +900,36 @@ export default function App() {
                 >
                   Pricing
                 </a>
-                <a
-                  href="#"
+                <Link
+                  to="/about"
                   className="hover:text-cyan-400 transition duration-300"
                 >
                   About Us
-                </a>
+                </Link>
               </div>
             </div>
 
             {/* Resources */}
+
             <div>
               <h3 className="text-2xl font-bold text-white mb-6">Resources</h3>
 
               <div className="flex flex-col gap-4 text-lg">
-                <a
-                  href="#"
-                  className="hover:text-cyan-400 transition duration-300"
-                >
+                <span className="hover:text-cyan-400 transition duration-300 cursor-pointer">
                   AI Career Roadmaps
-                </a>
-                <a
-                  href="#"
-                  className="hover:text-cyan-400 transition duration-300"
-                >
-                  Internship Guidance
-                </a>
-                <a
-                  href="#"
-                  className="hover:text-cyan-400 transition duration-300"
-                >
-                  Resume Builder
-                </a>
-                <a
-                  href="#"
-                  className="hover:text-cyan-400 transition duration-300"
-                >
-                  Blog & Updates
-                </a>
+                </span>
+
+                <span className="hover:text-cyan-400 transition duration-300 cursor-pointer">
+                  Resume Analysis
+                </span>
+
+                <span className="hover:text-cyan-400 transition duration-300 cursor-pointer">
+                  Mock Interviews
+                </span>
+
+                <span className="hover:text-cyan-400 transition duration-300 cursor-pointer">
+                  Career Assessments
+                </span>
               </div>
             </div>
 
@@ -921,7 +940,8 @@ export default function App() {
               <div className="flex flex-col gap-4 text-lg">
                 <p>📧 wavesights.ai@gmail.com</p>
                 <p>🌍 India</p>
-                <p>🤖 AI Career Platform</p>
+                <p>🚀 Built for Students & Graduates</p>
+                <p>🤖 AI-Powered Career Intelligence</p>
 
                 <Link
                   to="/contact"
@@ -964,31 +984,40 @@ export default function App() {
           </div>
 
           {/* Bottom Footer */}
-          <div className="border-t border-white/10 mt-14 pt-8 flex flex-col md:flex-row justify-between items-center gap-6 text-sm md:text-base">
-            <p className="text-gray-500">
-              © 2026 WaveSights — Built with AI for future careers 🚀
-            </p>
 
-            <div className="flex gap-6 text-gray-400">
-              <a
-                href="#"
-                className="hover:text-cyan-400 transition duration-300"
-              >
-                Privacy Policy
-              </a>
-              <a
-                href="#"
-                className="hover:text-cyan-400 transition duration-300"
-              >
-                Terms & Conditions
-              </a>
-              <a
-                href="#"
-                className="hover:text-cyan-400 transition duration-300"
-              >
-                Support
-              </a>
+          <div className="border-t border-white/10 mt-12 pt-8">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <p className="text-gray-500 text-sm text-center md:text-left">
+                © 2026 WaveSights. All rights reserved.
+              </p>
+
+              <div className="flex gap-6 text-sm">
+                <Link
+                  to="/privacy"
+                  className="hover:text-cyan-400 transition duration-300"
+                >
+                  Privacy Policy
+                </Link>
+
+                <Link
+                  to="/terms"
+                  className="hover:text-cyan-400 transition duration-300"
+                >
+                  Terms & Conditions
+                </Link>
+
+                <Link
+                  to="/support"
+                  className="hover:text-cyan-400 transition duration-300"
+                >
+                  Support
+                </Link>
+              </div>
             </div>
+
+            <p className="text-center text-gray-600 text-sm mt-4">
+              Empowering students with AI-driven career guidance.
+            </p>
           </div>
         </footer>
       </div>

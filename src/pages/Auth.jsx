@@ -1,16 +1,17 @@
 import { useState } from "react";
 import logo from "../assets/logo.png";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 import {
   GoogleAuthProvider,
   signInWithPopup,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
+  sendPasswordResetEmail,
   updateProfile,
 } from "firebase/auth";
 
 import { doc, setDoc, getDoc } from "firebase/firestore";
-
 import { auth, db } from "../firebase";
 
 import { useNavigate } from "react-router-dom";
@@ -27,6 +28,7 @@ export default function Auth() {
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   // GOOGLE AUTH
 
@@ -156,6 +158,20 @@ export default function Auth() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    if (!email) {
+      alert("Please enter your email address first.");
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      alert("Password reset link sent to your email.");
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#020817] text-white flex items-center justify-center px-6 py-6 relative overflow-hidden">
       {/* Glow */}
@@ -197,7 +213,7 @@ export default function Auth() {
 
         {/* RIGHT */}
 
-      <div className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[40px] p-6 shadow-2xl">
+        <div className="bg-white/5 border border-white/10 backdrop-blur-2xl rounded-[40px] p-6 shadow-2xl">
           {/* Tabs */}
 
           <div className="flex bg-white/5 rounded-2xl p-2 mb-10">
@@ -251,13 +267,35 @@ export default function Auth() {
               className="w-full bg-white/5 border border-white/10 focus:border-cyan-400 outline-none px-6 py-5 rounded-2xl"
             />
 
-            <input
-              type="password"
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-white/5 border border-white/10 focus:border-cyan-400 outline-none px-6 py-5 rounded-2xl"
-            />
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full bg-white/5 border border-white/10 focus:border-cyan-400 outline-none px-6 py-5 pr-14 rounded-2xl"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-cyan-400"
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+
+            {isLogin && (
+              <div className="flex justify-end mt-2 mb-4">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-cyan-400 hover:text-cyan-300 text-sm"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
 
             {/* Main Button */}
 

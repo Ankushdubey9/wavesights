@@ -16,7 +16,13 @@ export default function AIChat() {
         ];
   });
 
-  const [input, setInput] = useState("");
+  const exploreCareer = localStorage.getItem("exploreCareer");
+
+const [input, setInput] = useState(
+  exploreCareer
+    ? `I want to explore ${exploreCareer} career path. Give me roadmap, skills, salary, opportunities and preparation strategy.`
+    : ""
+);
 
   const [loading, setLoading] = useState(false);
 
