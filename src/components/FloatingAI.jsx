@@ -76,6 +76,7 @@ Keep answers short and practical.
 
       const data =
         await response.json();
+        
 
       const aiReply =
         data.choices[0]
@@ -106,7 +107,7 @@ Keep answers short and practical.
         onClick={() =>
           setOpen(!open)
         }
-        className="fixed bottom-24 right-6 z-50 w-16 h-16 rounded-full bg-cyan-400 text-black text-3xl shadow-2xl hover:scale-110 transition-all"
+        className="fixed bottom-6 right-6 z-50 w-16 h-16 rounded-full bg-cyan-400 text-black text-3xl shadow-2xl hover:scale-110 transition-all"
       >
         🤖
       </button>
@@ -115,7 +116,14 @@ Keep answers short and practical.
 
       {open && (
 
-        <div className="fixed bottom-24 right-6 w-[350px] max-w-[90vw] bg-[#020817] border border-cyan-400/20 rounded-3xl shadow-2xl z-50 overflow-hidden">
+        <div className="fixed bottom-6 right-6 w-[350px] max-w-[90vw] bg-[#020817] border border-cyan-400/20 rounded-3xl shadow-2xl z-50 overflow-hidden">
+         
+         <button
+  onClick={() => setOpen(false)}
+  className="absolute top-3 right-4 text-gray-400 hover:text-red-400 text-2xl font-bold z-50"
+>
+  ✕
+</button>
 
           {/* Header */}
 

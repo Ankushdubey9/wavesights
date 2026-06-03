@@ -35,7 +35,11 @@ export default function Dashboard() {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const selectedRoadmap = roadmapData[interest]?.[skillLevel] || [];
+  const aiData = JSON.parse(localStorage.getItem("aiCareerData")) || {};
+
+  const selectedRoadmap = aiData.roadmap || [];
+
+  const recommendations = aiData.recommendations || [];
 
   useEffect(() => {
     const fetchProgress = async () => {
@@ -58,7 +62,7 @@ export default function Dashboard() {
         console.log("Loaded Progress:", savedProgress);
 
         const filteredProgress = savedProgress.filter((step) =>
-          selectedRoadmap.includes(step),
+          selectedRoadmap.some((roadmapStep) => roadmapStep.title === step),
         );
 
         setCompletedSteps(filteredProgress);
@@ -73,314 +77,6 @@ export default function Dashboard() {
   console.log(careerGoal);
 
   let dashboardTitle = "";
-  let recommendations = [];
-
-  if (userType === "School Student") {
-    dashboardTitle = "Student Discovery Dashboard";
-
-    recommendations = [
-      "Discover your strengths and interests",
-      "Explore science, commerce, and arts careers",
-      "Build communication and computer skills",
-      "Learn future technologies and AI basics",
-    ];
-  }
-
-  if (userType === "Intermediate Student") {
-    dashboardTitle = "Career Direction Dashboard";
-
-    recommendations = [
-      "Choose the right degree and career path",
-      "Explore entrance exams and opportunities",
-      "Build learning consistency and discipline",
-      "Research future-demand careers",
-    ];
-  }
-
-  if (userType === "B.Tech Student") {
-    dashboardTitle = "Tech Career Dashboard";
-
-    recommendations = [
-      "Learn React & modern web development",
-      "Practice DSA and coding interviews",
-      "Build real-world portfolio projects",
-      "Apply for internships and hackathons",
-    ];
-  }
-
-  if (userType === "B.Sc Student") {
-    dashboardTitle = "Science & Research Dashboard";
-
-    recommendations = [
-      "Explore data science and analytics",
-      "Build scientific research skills",
-      "Learn technical tools and software",
-      "Prepare for higher studies or research roles",
-    ];
-  }
-
-  if (userType === "Commerce Student") {
-    dashboardTitle = "Finance & Business Dashboard";
-
-    recommendations = [
-      "Learn financial analysis and Excel",
-      "Explore banking and investment careers",
-      "Build communication and business skills",
-      "Research CA, MBA, and finance pathways",
-    ];
-  }
-
-  if (userType === "Arts Student") {
-    dashboardTitle = "Creative Career Dashboard";
-
-    recommendations = [
-      "Explore psychology and media careers",
-      "Build creative portfolio projects",
-      "Learn content creation and storytelling",
-      "Develop communication and design skills",
-    ];
-  }
-
-  if (userType === "Graduate") {
-    dashboardTitle = "Career Growth Dashboard";
-
-    recommendations = [
-      "Build industry-ready technical skills",
-      "Improve resume and interview preparation",
-      "Apply for jobs and internships regularly",
-      "Develop networking and LinkedIn presence",
-    ];
-  }
-
-  if (userType === "Career Switcher") {
-    dashboardTitle = "Career Transition Dashboard";
-
-    recommendations = [
-      "Identify transferable skills",
-      "Choose a focused new career path",
-      "Build practical projects and portfolio",
-      "Learn modern in-demand technologies",
-    ];
-  }
-
-  if (userType === "Government Exam Aspirant") {
-    dashboardTitle = "Government Exam Dashboard";
-
-    recommendations = [
-      "Practice daily current affairs",
-      "Build strong revision strategy",
-      "Attempt mock tests regularly",
-      "Track government exam notifications",
-    ];
-  }
-  let roadmapCards = [];
-
-  if (userType === "School Student") {
-    roadmapCards = [
-      {
-        title: "Career Discovery",
-        description: "Explore different future career opportunities.",
-        progress: "15% Complete",
-        icon: "🎓",
-      },
-      {
-        title: "Communication Skills",
-        description: "Build confidence and speaking abilities.",
-        progress: "25% Complete",
-        icon: "🗣️",
-      },
-      {
-        title: "Computer Basics",
-        description: "Learn digital and technology fundamentals.",
-        progress: "20% Complete",
-        icon: "💻",
-      },
-    ];
-  }
-
-  if (userType === "Intermediate Student") {
-    roadmapCards = [
-      {
-        title: "Career Exploration",
-        description: "Discover the right stream and future career paths.",
-        progress: "20% Complete",
-        icon: "📘",
-      },
-      {
-        title: "Skill Building",
-        description: "Develop communication and analytical skills.",
-        progress: "30% Complete",
-        icon: "🧠",
-      },
-      {
-        title: "Future Planning",
-        description: "Research colleges and career opportunities.",
-        progress: "15% Complete",
-        icon: "🚀",
-      },
-    ];
-  }
-
-  if (userType === "B.Tech Student") {
-    roadmapCards = [
-      {
-        title: "AI Engineer Roadmap",
-        description: "Step-by-step roadmap to become an AI Engineer.",
-        progress: "45% Complete",
-        icon: "🤖",
-      },
-      {
-        title: "Frontend Development",
-        description: "React, Tailwind, APIs, and modern UI development.",
-        progress: "30% Complete",
-        icon: "💻",
-      },
-      {
-        title: "DSA Preparation",
-        description: "Improve problem-solving and coding interview skills.",
-        progress: "20% Complete",
-        icon: "🧠",
-      },
-    ];
-  }
-
-  if (userType === "B.Sc Student") {
-    roadmapCards = [
-      {
-        title: "Research Skills",
-        description: "Build scientific research and analytical thinking.",
-        progress: "35% Complete",
-        icon: "🔬",
-      },
-      {
-        title: "Data Science Basics",
-        description: "Learn analytics and data interpretation.",
-        progress: "25% Complete",
-        icon: "📊",
-      },
-      {
-        title: "Higher Studies Planning",
-        description: "Prepare for masters and research opportunities.",
-        progress: "20% Complete",
-        icon: "🎓",
-      },
-    ];
-  }
-
-  if (userType === "Commerce Student") {
-    roadmapCards = [
-      {
-        title: "Finance Fundamentals",
-        description: "Learn accounting and financial management.",
-        progress: "40% Complete",
-        icon: "💰",
-      },
-      {
-        title: "Marketing Skills",
-        description: "Understand branding and digital marketing.",
-        progress: "30% Complete",
-        icon: "📈",
-      },
-      {
-        title: "Business Analytics",
-        description: "Analyze business trends and opportunities.",
-        progress: "20% Complete",
-        icon: "📊",
-      },
-    ];
-  }
-
-  if (userType === "Arts Student") {
-    roadmapCards = [
-      {
-        title: "Psychology Career Path",
-        description: "Understand psychology and human behavior.",
-        progress: "35% Complete",
-        icon: "🧠",
-      },
-      {
-        title: "Content Creation",
-        description: "Build writing and storytelling skills.",
-        progress: "25% Complete",
-        icon: "✍️",
-      },
-      {
-        title: "Design Fundamentals",
-        description: "Learn creative and visual design principles.",
-        progress: "20% Complete",
-        icon: "🎨",
-      },
-    ];
-  }
-
-  if (userType === "Graduate") {
-    roadmapCards = [
-      {
-        title: "Job Preparation",
-        description: "Build interview and placement readiness.",
-        progress: "50% Complete",
-        icon: "💼",
-      },
-      {
-        title: "Industry Skills",
-        description: "Learn high-demand professional skills.",
-        progress: "35% Complete",
-        icon: "🚀",
-      },
-      {
-        title: "Networking Growth",
-        description: "Build LinkedIn and professional connections.",
-        progress: "25% Complete",
-        icon: "🌐",
-      },
-    ];
-  }
-
-  if (userType === "Career Switcher") {
-    roadmapCards = [
-      {
-        title: "Career Transition",
-        description: "Identify and plan your new career direction.",
-        progress: "30% Complete",
-        icon: "🔄",
-      },
-      {
-        title: "Modern Skills",
-        description: "Learn industry-relevant technologies and tools.",
-        progress: "35% Complete",
-        icon: "💻",
-      },
-      {
-        title: "Portfolio Building",
-        description: "Build projects and practical experience.",
-        progress: "20% Complete",
-        icon: "📂",
-      },
-    ];
-  }
-
-  if (userType === "Government Exam Aspirant") {
-    roadmapCards = [
-      {
-        title: "Current Affairs",
-        description: "Stay updated with daily national and world events.",
-        progress: "40% Complete",
-        icon: "📰",
-      },
-      {
-        title: "Mock Test Practice",
-        description: "Improve exam performance with regular tests.",
-        progress: "30% Complete",
-        icon: "📝",
-      },
-      {
-        title: "Revision Strategy",
-        description: "Build smart preparation and revision plans.",
-        progress: "25% Complete",
-        icon: "🎯",
-      },
-    ];
-  }
 
   return (
     <div className="min-h-screen bg-[#020817] text-white flex flex-col md:flex-row overflow-x-hidden">
@@ -399,11 +95,7 @@ export default function Dashboard() {
         </button>
 
         <div className="flex items-center gap-3 mb-10">
-        <img  
-  src={logo}  
-  alt="logo"  
-  className="w-16 h-16 object-contain"  
-/>
+          <img src={logo} alt="logo" className="w-16 h-16 object-contain" />
 
           <div>
             <h1 className="text-4xl font-black bg-gradient-to-r from-cyan-400 to-blue-500 bg-clip-text text-transparent">
@@ -468,11 +160,11 @@ export default function Dashboard() {
             WaveSights AI
           </button>
           <Link
-  to="/"
-  className="block w-full text-center bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black py-4 rounded-2xl font-bold transition duration-300"
->
-  🏠 Back to Home
-</Link>
+            to="/"
+            className="block w-full text-center bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black py-4 rounded-2xl font-bold transition duration-300"
+          >
+            🏠 Back to Home
+          </Link>
         </div>
 
         <button
@@ -513,57 +205,32 @@ export default function Dashboard() {
           </div>
 
           <div className="flex flex-col gap-4 w-full md:w-auto">
+            {/* User Card */}
 
-  {/* User Card */}
+            <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 flex items-center gap-4">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-cyan-500/30 border border-white/10">
+                {localStorage.getItem("name")?.charAt(0)?.toUpperCase() || "U"}
+              </div>
 
-  <div className="bg-white/5 border border-white/10 rounded-2xl px-5 py-4 flex items-center gap-4">
+              <div>
+                <h3 className="font-bold text-lg">
+                  {localStorage.getItem("name")}
+                </h3>
 
-<div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 flex items-center justify-center text-2xl font-black text-white shadow-lg shadow-cyan-500/30 border border-white/10">
+                <p className="text-gray-400 text-sm">AI Learner</p>
+              </div>
+            </div>
 
-  {localStorage
-    .getItem("name")
-    ?.charAt(0)
-    ?.toUpperCase() || "U"}
+            {/* Goal Card */}
 
-</div>
+            <div className="bg-white/5 border border-white/10 px-6 py-4 rounded-2xl">
+              <p className="text-gray-400 text-sm">Current Goal</p>
 
-    <div>
-
-      <h3 className="font-bold text-lg">
-
-        {localStorage.getItem("name")}
-
-      </h3>
-
-      <p className="text-gray-400 text-sm">
-
-        AI Learner
-
-      </p>
-
-    </div>
-
-  </div>
-
-  {/* Goal Card */}
-
-  <div className="bg-white/5 border border-white/10 px-6 py-4 rounded-2xl">
-
-    <p className="text-gray-400 text-sm">
-
-      Current Goal
-
-    </p>
-
-    <h2 className="text-xl md:text-2xl font-bold text-cyan-400 break-words">
-
-      {careerGoal}
-
-    </h2>
-
-  </div>
-
-</div>
+              <h2 className="text-xl md:text-2xl font-bold text-cyan-400 break-words">
+                {careerGoal}
+              </h2>
+            </div>
+          </div>
         </div>
 
         {/* Dynamic Stats */}
@@ -611,29 +278,10 @@ export default function Dashboard() {
             AI Career Roadmaps
           </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {roadmapCards.map((card, index) => (
-              <div
-                key={index}
-                className="bg-gradient-to-br hover:shadow-cyan-500/20 hover:shadow-2xl from-cyan-500/10 to-blue-500/10 border border-white/10 rounded-3xl p-5 md:p-8 hover:border-cyan-400/40 transition duration-300 hover:-translate-y-2"
-              >
-                <div className="text-4xl md:text-6xl mb-6">{card.icon}</div>
-
-                <h3 className="text-2xl md:text-3xl font-bold mb-4">
-                  {card.title}
-                </h3>
-
-                <p className="text-gray-400 text-lg leading-relaxed mb-6">
-                  {card.description}
-                </p>
-
-                <div className="w-full bg-white/10 rounded-full h-3 mb-4 overflow-hidden">
-                  <div className="bg-cyan-400 h-3 w-1/2 rounded-full"></div>
-                </div>
-
-                <p className="text-cyan-400 font-semibold">{card.progress}</p>
-              </div>
-            ))}
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
+            <p className="text-gray-400">
+              Generate your personalized roadmap from the AI Roadmap page.
+            </p>
           </div>
         </section>
 
@@ -656,83 +304,129 @@ export default function Dashboard() {
           </p>
         </div>
 
-        {/* Recommendations */}
-        <section>
+        Recommendations
+        <section className="mb-14">
           <h2 className="text-2xl md:text-4xl font-black mb-8">
-            AI Recommendations
+            🤖 AI Recommendations
           </h2>
 
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-            <div className="space-y-5">
-              {recommendations.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col md:flex-row items-start md:items-center gap-4 bg-white/5 rounded-2xl px-4 md:px-5 py-4 hover:bg-cyan-500/10 transition duration-300"
-                >
-                  <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 flex items-center justify-center text-2xl">
-                    ✨
-                  </div>
-
-                  <p className="text-base md:text-lg text-gray-200">{item}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {recommendations.map((item, index) => (
+              <div
+                key={index}
+                className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-6 hover:shadow-cyan-500/20 hover:shadow-xl transition duration-300 hover:-translate-y-1"
+              >
+                <div className="text-5xl mb-4">
+                  {["🚀", "🔥", "💡", "🎯"][index % 4]}
                 </div>
-              ))}
-            </div>
+
+                <h3 className="text-xl font-bold text-cyan-400 mb-3">
+                  Recommendation {index + 1}
+                </h3>
+
+                <div className="text-5xl mb-4">
+                  {["🚀", "🔥", "💡", "🎯"][index % 4]}
+                </div>
+
+                <h3 className="text-xl font-bold text-cyan-400 mb-2">
+                  {item.title}
+                </h3>
+
+                <p className="text-gray-300 mb-3">{item.description}</p>
+
+                <span className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-300 text-sm">
+                  {item.priority}
+                </span>
+              </div>
+            ))}
           </div>
         </section>
 
         <section className="mt-14">
           <h2 className="text-2xl md:text-4xl font-black mb-8">
-            Personalized Career Roadmap
+            🗺️ Personalized Career Roadmap
           </h2>
 
-          <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-            <h3 className="text-2xl md:text-3xl font-bold text-cyan-400 mb-8">
-              {interest} Roadmap
-            </h3>
-
-            <div className="space-y-5">
+          <div className="bg-gradient-to-br from-white/5 to-cyan-500/5 border border-cyan-400/20 rounded-3xl p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-2xl md:text-3xl font-bold text-cyan-400">
+                {interest} Roadmap 🚀
+              </h3>
+            </div>
+            <div className="space-y-6">
               {selectedRoadmap.map((step, index) => (
                 <div
                   key={index}
-                  className="flex flex-col md:flex-row items-start md:items-center gap-5 bg-white/5 rounded-2xl px-4 md:px-6 py-5 hover:bg-cyan-500/10 transition duration-300"
+                  className="bg-white/5 border border-white/10 rounded-3xl p-6 hover:border-cyan-400/30 hover:bg-cyan-500/5 transition duration-300"
                 >
-                  <div className="w-12 h-12 rounded-2xl bg-cyan-500/20 flex items-center justify-center font-bold text-cyan-400">
-                    {index + 1}
-                  </div>
+                  <div className="flex items-start gap-5">
+                    <div className="w-14 h-14 rounded-full bg-cyan-500/20 flex items-center justify-center font-black text-cyan-400 text-lg">
+                      {index + 1}
+                    </div>
 
-                  <div className="flex items-center justify-between w-full">
-                    <p className="text-base md:text-lg break-words">{step}</p>
+                    <div className="flex-1">
+                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <h3 className="text-lg md:text-xl font-bold text-white">
+                          {step.title}
+                        </h3>
 
-                    <input
-                      type="checkbox"
-                      checked={completedSteps.includes(step)}
-                      className="w-6 h-6 accent-cyan-400"
-                      onChange={async () => {
-                        let updatedSteps = [];
+                        <p className="text-cyan-400 text-sm mt-1">
+                          {step.phase} • {step.duration}
+                        </p>
 
-                        if (completedSteps.includes(step)) {
-                          updatedSteps = completedSteps.filter(
-                            (item) => item !== step,
-                          );
-                        } else {
-                          updatedSteps = [...completedSteps, step];
-                        }
+                        <p className="text-gray-400 mt-2">{step.goal}</p>
 
-                        setCompletedSteps(updatedSteps);
+                        <div className="mt-3 space-y-1">
+                          {step.tasks?.map((task, i) => (
+                            <p key={i} className="text-sm text-gray-300">
+                              ✅ {task}
+                            </p>
+                          ))}
+                        </div>
 
-                        try {
-                          await saveProgress(userId, updatedSteps);
+                        <input
+                          type="checkbox"
+                          checked={completedSteps.includes(step.title)}
+                          className="w-7 h-7 accent-cyan-400 cursor-pointer"
+                          onChange={async () => {
+                            let updatedSteps = [];
 
-                          console.log("Saved:", updatedSteps);
-                        } catch (error) {
-                          console.log(error);
-                        }
-                      }}
-                    />
+                            if (completedSteps.includes(step.title)) {
+                              updatedSteps = completedSteps.filter(
+                                (item) => item !== step.title,
+                              );
+                            } else {
+                              updatedSteps = [...completedSteps, step.title];
+                            }
+
+                            setCompletedSteps(updatedSteps);
+
+                            try {
+                              await saveProgress(userId, updatedSteps);
+                            } catch (error) {
+                              console.log(error);
+                            }
+                          }}
+                        />
+                      </div>
+
+                      <div className="mt-4">
+                        {completedSteps.includes(step.title) ? (
+                          <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-sm">
+                            ✅ Completed
+                          </span>
+                        ) : (
+                          <span className="px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 text-sm">
+                            ⏳ In Progress
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
+            ```
           </div>
         </section>
 
