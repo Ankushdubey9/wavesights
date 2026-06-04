@@ -118,12 +118,12 @@ export default function Dashboard() {
             👤 Profile
           </Link>
 
-          <button
+          {/* <button
             onClick={() => (window.location.href = "/ai-roadmap")}
             className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
           >
             AI Roadmaps
-          </button>
+          </button> */}
 
           <Link
             to="/leaderboard"
@@ -132,33 +132,33 @@ export default function Dashboard() {
             🏆 Leaderboard
           </Link>
 
-          <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300">
+          {/* <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300">
             Skill Tracker
           </button>
 
           <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300">
             Internship Guidance
-          </button>
+          </button> */}
 
-          <Link
+          {/* <Link
             to="/resume-analyzer"
             className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
           >
             Resume Analyzer
-          </Link>
+          </Link> */}
 
-          <Link
+          {/* <Link
             to="/mock-interview"
             className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
           >
             AI Mock Interview
-          </Link>
-          <button
+          </Link> */}
+          {/* <button
             onClick={() => (window.location.href = "/ai-chat")}
             className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
           >
             WaveSights AI
-          </button>
+          </button> */}
           <Link
             to="/"
             className="block w-full text-center bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black py-4 rounded-2xl font-bold transition duration-300"
@@ -233,6 +233,125 @@ export default function Dashboard() {
           </div>
         </div>
 
+        {/* Continue Journey */}
+
+<div className="mb-10 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-8">
+
+  <h2 className="text-3xl font-black text-cyan-400 mb-4">
+    🚀 Continue Your Journey
+  </h2>
+
+  <div className="grid md:grid-cols-3 gap-6">
+
+    <div>
+      <p className="text-gray-400">Career Goal</p>
+      <h3 className="text-xl font-bold">
+        {careerGoal}
+      </h3>
+    </div>
+
+    <div>
+      <p className="text-gray-400">Progress</p>
+      <h3 className="text-xl font-bold text-cyan-400">
+        {selectedRoadmap.length > 0
+          ? Math.round(
+              (completedSteps.length /
+                selectedRoadmap.length) *
+                100
+            )
+          : 0}
+        %
+      </h3>
+    </div>
+
+    <div>
+      <p className="text-gray-400">Current Streak</p>
+      <h3 className="text-xl font-bold">
+        🔥 {learningStreak} Days
+      </h3>
+    </div>
+
+  </div>
+
+</div>
+
+
+        {/* Career Accelerator */}
+
+        <section className="mb-14">
+          <h2 className="text-2xl md:text-4xl font-black mb-8">
+            🚀 Career Accelerator
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Link
+              to="/resume-analyzer"
+              className="group bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-6 hover:scale-105 transition-all"
+            >
+              <div className="text-5xl mb-4">📄</div>
+              <span className="inline-block mb-3 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold">
+  🔥 Most Popular
+</span>
+
+              <h3 className="text-xl font-bold text-cyan-400 mb-2">
+                Resume Analyzer
+              </h3>
+
+              <p className="text-gray-400 text-sm">
+                Improve ATS score and get personalized resume feedback.
+              </p>
+            </Link>
+
+            <Link
+              to="/mock-interview"
+              className="group bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/20 rounded-3xl p-6 hover:scale-105 transition-all"
+            >
+              <div className="text-5xl mb-4">🎤</div>
+              <span className="inline-block mb-3 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold">
+  ⭐ Recommended
+</span>
+
+              <h3 className="text-xl font-bold text-purple-400 mb-2">
+                Mock Interview
+              </h3>
+
+              <p className="text-gray-400 text-sm">
+                Practice technical and HR interviews with AI.
+              </p>
+            </Link>
+
+            <button
+              onClick={() => (window.location.href = "/ai-roadmap")}
+              className="text-left bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-400/20 rounded-3xl p-6 hover:scale-105 transition-all"
+            >
+              <div className="text-5xl mb-4">🗺️</div>
+
+              <h3 className="text-xl font-bold text-green-400 mb-2">
+                Career Roadmap
+              </h3>
+
+              <p className="text-gray-400 text-sm">
+                Follow your AI-generated learning roadmap.
+              </p>
+            </button>
+
+            <button
+              onClick={() => (window.location.href = "/ai-chat")}
+              className="text-left bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-400/20 rounded-3xl p-6 hover:scale-105 transition-all"
+            >
+              <div className="text-5xl mb-4">🤖</div>
+
+              <h3 className="text-xl font-bold text-yellow-400 mb-2">
+                Wavesights AI
+              </h3>
+
+              <p className="text-gray-400 text-sm">
+                Ask anything about career growth and learning.
+              </p>
+            </button>
+          </div>
+        </section>
+
         {/* Dynamic Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
           {/* Skills Learned */}
@@ -272,7 +391,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Roadmap Cards */}
+        {/* Roadmap Cards
         <section className="mb-14">
           <h2 className="text-2xl md:text-4xl font-black mb-8">
             AI Career Roadmaps
@@ -283,6 +402,59 @@ export default function Dashboard() {
               Generate your personalized roadmap from the AI Roadmap page.
             </p>
           </div>
+        </section> */}
+
+
+        {/* Recommendations */}
+        <section className="mb-14">
+          <h2 className="text-2xl md:text-4xl font-black mb-8">
+            🤖 AI Recommendations
+          </h2>
+
+          {recommendations.length === 0 ? (
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 text-center">
+              <h3 className="text-2xl font-bold text-cyan-400 mb-3">
+                🚀 No Recommendations Yet
+              </h3>
+
+              <p className="text-gray-400 mb-5">
+                Generate your AI Roadmap first to unlock personalized
+                recommendations.
+              </p>
+
+              <button
+                onClick={() => (window.location.href = "/ai-roadmap")}
+                className="px-6 py-3 rounded-2xl bg-cyan-500 text-black font-bold hover:scale-105 transition-all"
+              >
+                Generate Roadmap
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {recommendations.map((item, index) => (
+                <div
+                  key={index}
+                  className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-6 hover:shadow-cyan-500/20 hover:shadow-xl transition duration-300 hover:-translate-y-1"
+                >
+                  <div className="text-5xl mb-4">
+                    {["🚀", "🔥", "💡", "🎯"][index % 4]}
+                  </div>
+
+               
+
+                  <h3 className="text-xl font-bold text-cyan-400 mb-2">
+                    {item.title}
+                  </h3>
+
+                  <p className="text-gray-300 mb-3">{item.description}</p>
+
+                  <span className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-300 text-sm">
+                    {item.priority}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
         </section>
 
         {/* AI Motivation Section */}
@@ -304,131 +476,94 @@ export default function Dashboard() {
           </p>
         </div>
 
-        Recommendations
-        <section className="mb-14">
-          <h2 className="text-2xl md:text-4xl font-black mb-8">
-            🤖 AI Recommendations
-          </h2>
+        {selectedRoadmap.length > 0 && (
+          <section className="mt-14">
+            <h2 className="text-2xl md:text-4xl font-black mb-8">
+              🗺️ Personalized Career Roadmap
+            </h2>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {recommendations.map((item, index) => (
-              <div
-                key={index}
-                className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-6 hover:shadow-cyan-500/20 hover:shadow-xl transition duration-300 hover:-translate-y-1"
-              >
-                <div className="text-5xl mb-4">
-                  {["🚀", "🔥", "💡", "🎯"][index % 4]}
-                </div>
-
-                <h3 className="text-xl font-bold text-cyan-400 mb-3">
-                  Recommendation {index + 1}
+            <div className="bg-gradient-to-br from-white/5 to-cyan-500/5 border border-cyan-400/20 rounded-3xl p-8">
+              <div className="flex items-center justify-between mb-8">
+                <h3 className="text-2xl md:text-3xl font-bold text-cyan-400">
+                  {interest} Roadmap 🚀
                 </h3>
-
-                <div className="text-5xl mb-4">
-                  {["🚀", "🔥", "💡", "🎯"][index % 4]}
-                </div>
-
-                <h3 className="text-xl font-bold text-cyan-400 mb-2">
-                  {item.title}
-                </h3>
-
-                <p className="text-gray-300 mb-3">{item.description}</p>
-
-                <span className="px-3 py-1 rounded-full bg-cyan-500/10 text-cyan-300 text-sm">
-                  {item.priority}
-                </span>
               </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-14">
-          <h2 className="text-2xl md:text-4xl font-black mb-8">
-            🗺️ Personalized Career Roadmap
-          </h2>
-
-          <div className="bg-gradient-to-br from-white/5 to-cyan-500/5 border border-cyan-400/20 rounded-3xl p-8">
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl md:text-3xl font-bold text-cyan-400">
-                {interest} Roadmap 🚀
-              </h3>
-            </div>
-            <div className="space-y-6">
-              {selectedRoadmap.map((step, index) => (
-                <div
-                  key={index}
-                  className="bg-white/5 border border-white/10 rounded-3xl p-6 hover:border-cyan-400/30 hover:bg-cyan-500/5 transition duration-300"
-                >
-                  <div className="flex items-start gap-5">
-                    <div className="w-14 h-14 rounded-full bg-cyan-500/20 flex items-center justify-center font-black text-cyan-400 text-lg">
-                      {index + 1}
-                    </div>
-
-                    <div className="flex-1">
-                      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <h3 className="text-lg md:text-xl font-bold text-white">
-                          {step.title}
-                        </h3>
-
-                        <p className="text-cyan-400 text-sm mt-1">
-                          {step.phase} • {step.duration}
-                        </p>
-
-                        <p className="text-gray-400 mt-2">{step.goal}</p>
-
-                        <div className="mt-3 space-y-1">
-                          {step.tasks?.map((task, i) => (
-                            <p key={i} className="text-sm text-gray-300">
-                              ✅ {task}
-                            </p>
-                          ))}
-                        </div>
-
-                        <input
-                          type="checkbox"
-                          checked={completedSteps.includes(step.title)}
-                          className="w-7 h-7 accent-cyan-400 cursor-pointer"
-                          onChange={async () => {
-                            let updatedSteps = [];
-
-                            if (completedSteps.includes(step.title)) {
-                              updatedSteps = completedSteps.filter(
-                                (item) => item !== step.title,
-                              );
-                            } else {
-                              updatedSteps = [...completedSteps, step.title];
-                            }
-
-                            setCompletedSteps(updatedSteps);
-
-                            try {
-                              await saveProgress(userId, updatedSteps);
-                            } catch (error) {
-                              console.log(error);
-                            }
-                          }}
-                        />
+              <div className="space-y-6">
+                {selectedRoadmap.map((step, index) => (
+                  <div
+                    key={index}
+                    className="bg-white/5 border border-white/10 rounded-3xl p-6 hover:border-cyan-400/30 hover:bg-cyan-500/5 transition duration-300"
+                  >
+                    <div className="flex items-start gap-5">
+                      <div className="w-14 h-14 rounded-full bg-cyan-500/20 flex items-center justify-center font-black text-cyan-400 text-lg">
+                        {index + 1}
                       </div>
 
-                      <div className="mt-4">
-                        {completedSteps.includes(step.title) ? (
-                          <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-sm">
-                            ✅ Completed
-                          </span>
-                        ) : (
-                          <span className="px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 text-sm">
-                            ⏳ In Progress
-                          </span>
-                        )}
+                      <div className="flex-1">
+                        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                          <h3 className="text-lg md:text-xl font-bold text-white">
+                            {step.title}
+                          </h3>
+
+                          <p className="text-cyan-400 text-sm mt-1">
+                            {step.phase} • {step.duration}
+                          </p>
+
+                          <p className="text-gray-400 mt-2">{step.goal}</p>
+
+                          <div className="mt-3 space-y-1">
+                            {step.tasks?.map((task, i) => (
+                              <p key={i} className="text-sm text-gray-300">
+                                ✅ {task}
+                              </p>
+                            ))}
+                          </div>
+
+                          <input
+                            type="checkbox"
+                            checked={completedSteps.includes(step.title)}
+                            className="w-7 h-7 accent-cyan-400 cursor-pointer"
+                            onChange={async () => {
+                              let updatedSteps = [];
+
+                              if (completedSteps.includes(step.title)) {
+                                updatedSteps = completedSteps.filter(
+                                  (item) => item !== step.title,
+                                );
+                              } else {
+                                updatedSteps = [...completedSteps, step.title];
+                              }
+
+                              setCompletedSteps(updatedSteps);
+
+                              try {
+                                await saveProgress(userId, updatedSteps);
+                              } catch (error) {
+                                console.log(error);
+                              }
+                            }}
+                          />
+                        </div>
+
+                        <div className="mt-4">
+                          {completedSteps.includes(step.title) ? (
+                            <span className="px-3 py-1 rounded-full bg-green-500/10 text-green-400 text-sm">
+                              ✅ Completed
+                            </span>
+                          ) : (
+                            <span className="px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-400 text-sm">
+                              ⏳ In Progress
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-            ```
-          </div>
-        </section>
+          </section>
+        )}
 
         {completedSteps.length === selectedRoadmap.length &&
           selectedRoadmap.length > 0 && (

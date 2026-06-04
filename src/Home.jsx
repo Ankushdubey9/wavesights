@@ -440,33 +440,19 @@ export default function App() {
                         </Link>
                       </div>
 
-                      {/* Floating Stats */}
+                      {/* Floating Stats
 
-                      <div className="mt-14 grid grid-cols-3 gap-5">
-                        <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-5 hover:-translate-y-1 transition duration-300">
-                          <h3 className="text-4xl font-black text-cyan-400">
-                            10K+
-                          </h3>
+                      <div className="mt-14 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-8">
+                        <h3 className="text-3xl font-black text-cyan-400 mb-4">
+                          🚀 Your AI Career Partner
+                        </h3>
 
-                          <p className="text-gray-400 mt-2">Students</p>
-                        </div>
-
-                        <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-5 hover:-translate-y-1 transition duration-300">
-                          <h3 className="text-4xl font-black text-cyan-400">
-                            500+
-                          </h3>
-
-                          <p className="text-gray-400 mt-2">Roadmaps</p>
-                        </div>
-
-                        <div className="bg-white/5 border border-white/10 backdrop-blur-xl rounded-3xl p-5 hover:-translate-y-1 transition duration-300">
-                          <h3 className="text-4xl font-black text-cyan-400">
-                            AI
-                          </h3>
-
-                          <p className="text-gray-400 mt-2">Powered</p>
-                        </div>
-                      </div>
+                        <p className="text-gray-300 text-lg leading-relaxed">
+                          Get personalized roadmaps, resume analysis, mock
+                          interviews, internship guidance and AI-powered career
+                          mentoring — all in one place.
+                        </p>
+                      </div> */}
                     </div>
 
                     {/* RIGHT SIDE */}
@@ -529,7 +515,96 @@ export default function App() {
           </div>
         </section>
 
-        {/* Trust Bar */}
+        {/* Career Accelerator */}
+
+        <section className="px-6 md:px-10 py-24">
+          <div className="text-center mb-16">
+            <div className="inline-flex px-4 py-2 rounded-full bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 mb-6">
+              Trusted AI Tools For Students & Graduates
+            </div>
+
+            <h2 className="text-4xl md:text-6xl font-black">
+              🚀 Accelerate Your Career
+            </h2>
+
+            <p className="mt-6 text-gray-400 text-lg md:text-xl max-w-3xl mx-auto">
+              Everything you need to become internship and job ready.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-6xl mx-auto">
+            <Link
+              to="/resume-analyzer"
+              className="group bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-8 hover:scale-105 transition-all"
+            >
+              <div className="text-5xl mb-4">📄</div>
+
+              <span className="inline-block mb-3 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold">
+                🔥 Most Popular
+              </span>
+
+              <h3 className="text-3xl font-bold text-cyan-400 mb-4">
+                Resume Analyzer
+              </h3>
+
+              <p className="text-gray-400 text-lg">
+                Get ATS score, missing skills, project feedback and resume
+                improvements.
+              </p>
+            </Link>
+
+            <Link
+              to="/mock-interview"
+              className="group bg-gradient-to-br from-purple-500/10 to-pink-500/10 border border-purple-400/20 rounded-3xl p-8 hover:scale-105 transition-all"
+            >
+              <div className="text-5xl mb-4">🎤</div>
+
+              <span className="inline-block mb-3 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold">
+                ⭐ Recommended
+              </span>
+
+              <h3 className="text-3xl font-bold text-purple-400 mb-4">
+                AI Mock Interview
+              </h3>
+
+              <p className="text-gray-400 text-lg">
+                Practice HR and Technical interviews with AI feedback.
+              </p>
+            </Link>
+
+            <Link
+              to="/ai-roadmap"
+              className="group bg-gradient-to-br from-green-500/10 to-emerald-500/10 border border-green-400/20 rounded-3xl p-8 hover:scale-105 transition-all"
+            >
+              <div className="text-5xl mb-4">🗺️</div>
+
+              <h3 className="text-3xl font-bold text-green-400 mb-4">
+                Career Roadmap
+              </h3>
+
+              <p className="text-gray-400 text-lg">
+                Get a personalized roadmap based on your goals and skills.
+              </p>
+            </Link>
+
+            <Link
+              to="/ai-chat"
+              className="group bg-gradient-to-br from-yellow-500/10 to-orange-500/10 border border-yellow-400/20 rounded-3xl p-8 hover:scale-105 transition-all"
+            >
+              <div className="text-5xl mb-4">🤖</div>
+
+              <h3 className="text-3xl font-bold text-yellow-400 mb-4">
+                WaveSights AI Coach
+              </h3>
+
+              <p className="text-gray-400 text-lg">
+                Ask anything about career growth, skills and learning.
+              </p>
+            </Link>
+          </div>
+        </section>
+
+        {/* Trust Bar
 
         <section className="px-6 md:px-10 py-10">
           <div className="max-w-7xl mx-auto bg-white/5 border border-white/10 rounded-[40px] p-8 backdrop-blur-xl">
@@ -555,24 +630,7 @@ export default function App() {
               </span>
             </div>
           </div>
-        </section>
-
-        {/* Stats Section */}
-        <section className="px-6 md:px-10 py-10">
-          <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((item, index) => (
-              <div
-                key={index}
-                className="bg-white/5 border border-white/10 rounded-3xl p-6 text-center hover:border-cyan-400/40 transition duration-300"
-              >
-                <h2 className="text-3xl md:text-4xl font-black text-cyan-400 mb-2">
-                  {item.number}
-                </h2>
-                <p className="text-gray-400">{item.label}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+        </section> */}
 
         {/* Journey Cards */}
         <motion.section
@@ -620,23 +678,23 @@ export default function App() {
                 </p>
 
                 <button
-  onClick={() => {
-    const isLoggedIn = localStorage.getItem("email");
+                  onClick={() => {
+                    const isLoggedIn = localStorage.getItem("email");
 
-    if (isLoggedIn) {
-      localStorage.setItem("previewUserType", item.title);
+                    if (isLoggedIn) {
+                      localStorage.setItem("previewUserType", item.title);
 
-      window.location.href = "/explore-careers";
-    } else {
-      localStorage.setItem("userType", item.title);
+                      window.location.href = "/explore-careers";
+                    } else {
+                      localStorage.setItem("userType", item.title);
 
-      window.location.href = "/auth";
-    }
-  }}
-  className="block w-full text-center bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black px-6 py-3 rounded-2xl font-bold transition duration-300"
->
-  Get Started 🚀
-</button>
+                      window.location.href = "/auth";
+                    }
+                  }}
+                  className="block w-full text-center bg-cyan-500/10 border border-cyan-400/20 hover:bg-cyan-500 hover:text-black px-6 py-3 rounded-2xl font-bold transition duration-300"
+                >
+                  Get Started 🚀
+                </button>
               </div>
             ))}
           </div>

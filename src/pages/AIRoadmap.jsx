@@ -156,7 +156,7 @@ Return ONLY valid JSON.
     "priority": "",
     "whyItMatters": ""
   }
-]
+],
 
 "roadmap": [
   {
@@ -169,7 +169,7 @@ Return ONLY valid JSON.
     "project": "",
     "milestone": ""
   }
-]
+],
 
   "projects": [
     {
