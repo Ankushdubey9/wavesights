@@ -1,3 +1,6 @@
+
+import logo from "../assets/logo.png";
+
 export default function Loader() {
 
   return (
@@ -20,11 +23,21 @@ export default function Loader() {
 
       <div className="relative z-10 flex flex-col items-center">
 
-        <div className="w-28 h-28 rounded-[30px] bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 shadow-[0_0_80px_rgba(0,255,255,0.4)] flex items-center justify-center text-6xl mb-8 animate-pulse">
+       <div className="mb-8 relative">
 
-          🚀
+  <div className="absolute inset-0 bg-cyan-400/20 blur-3xl rounded-full animate-pulse"></div>
 
-        </div>
+  <div className="relative w-36 h-36 rounded-3xl bg-white/5 border border-cyan-400/20 backdrop-blur-xl flex items-center justify-center shadow-[0_0_60px_rgba(0,255,255,0.25)]">
+
+    <img
+      src={logo}
+      alt="WaveSights"
+      className="w-28 h-28 object-contain"
+    />
+
+  </div>
+
+</div>
 
         {/* Brand */}
 
@@ -38,7 +51,7 @@ export default function Loader() {
 
         <p className="mt-6 text-cyan-300 text-xl md:text-2xl font-semibold animate-pulse">
 
-          Initializing AI Career Intelligence...
+          Preparing Your Career Journey...
 
         </p>
 

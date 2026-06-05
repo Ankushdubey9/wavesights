@@ -188,7 +188,22 @@ export default function App() {
 
               <a href="#pricing">Pricing</a>
 
-              <Link to="/auth">Login</Link>
+              {userName ? (
+                <>
+                  <Link to="/dashboard">Dashboard</Link>
+
+                  <button
+                    onClick={() => {
+                      localStorage.clear();
+                      window.location.href = "/";
+                    }}
+                  >
+                    Logout
+                  </button>
+                </>
+              ) : (
+                <Link to="/auth">Login</Link>
+              )}
             </div>
           </div>
         )}
@@ -260,47 +275,53 @@ export default function App() {
             <div className="hidden md:flex items-center gap-5">
               {/* AI Badge */}
 
-              <div className="px-4 py-2 rounded-full border border-cyan-400/20 bg-cyan-500/10 text-cyan-300 text-sm font-semibold animate-pulse">
-                AI Powered
-              </div>
-
               {/* Login */}
               {userName ? (
-                <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/10">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 flex items-center justify-center text-xl font-black text-white shadow-lg shadow-cyan-500/30 border border-white/10">
-                    {localStorage.getItem("name")?.charAt(0)?.toUpperCase() ||
-                      "U"}
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 px-5 py-3 rounded-2xl text-cyan-300 font-semibold hover:scale-105 transition"
+                  >
+                    Dashboard 🚀
+                  </Link>
+
+                  <div className="flex items-center gap-3 bg-white/5 px-4 py-2 rounded-2xl border border-white/10">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-cyan-400 via-blue-500 to-purple-500 flex items-center justify-center text-xl font-black text-white">
+                      {userName?.charAt(0)?.toUpperCase()}
+                    </div>
+
+                    <div className="flex flex-col">
+                      <span className="font-semibold">{userName}</span>
+
+                      <button
+                        onClick={() => {
+                          localStorage.clear();
+                          window.location.href = "/";
+                        }}
+                        className="text-xs text-red-400 hover:text-red-300 text-left"
+                      >
+                        Logout
+                      </button>
+                    </div>
                   </div>
-
-                  <div className="flex flex-col">
-                    <span className="font-semibold">{userName}</span>
-
-                    <button
-                      onClick={() => {
-                        localStorage.clear();
-
-                        window.location.href = "/";
-                      }}
-                      className="text-xs text-red-400 hover:text-red-300 text-left"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                </div>
+                </>
               ) : (
-                <Link to="/auth" className="text-white hover:text-cyan-400">
-                  Login
-                </Link>
+                <>
+                  <Link
+                    to="/auth"
+                    className="text-white hover:text-cyan-400 font-medium"
+                  >
+                    Login
+                  </Link>
+
+                  <Link
+                    to="/auth"
+                    className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:scale-105 text-black px-7 py-3 rounded-2xl font-black text-lg transition"
+                  >
+                    Get Started 🚀
+                  </Link>
+                </>
               )}
-
-              {/* CTA Button */}
-
-              <Link
-                to="/auth"
-                className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:scale-105 hover:shadow-cyan-500/40 shadow-2xl text-black px-7 py-3 rounded-2xl font-black text-lg transition duration-300"
-              >
-                Get Started 🚀
-              </Link>
             </div>
 
             {/* Mobile Button */}
@@ -426,17 +447,17 @@ export default function App() {
 
                       <div className="mt-10 flex flex-wrap gap-5">
                         <Link
-                          to="/auth"
+                          to={userName ? "/dashboard" : "/auth"}
                           className="bg-gradient-to-r from-cyan-400 to-blue-500 hover:scale-105 hover:shadow-cyan-500/40 shadow-2xl text-black px-8 py-4 rounded-2xl font-black text-lg transition duration-300"
                         >
-                          Launch Career
+                          Launch Career 🚀
                         </Link>
 
                         <Link
-                          to="/auth"
+                          to="/ai-chat"
                           className="bg-white/5 border border-white/10 hover:border-cyan-400 hover:bg-cyan-500/10 px-8 py-4 rounded-2xl text-lg transition duration-300 text-center"
                         >
-                          Explore AI
+                          Explore AI 🤖
                         </Link>
                       </div>
 
