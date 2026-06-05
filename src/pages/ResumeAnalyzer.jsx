@@ -47,7 +47,7 @@ export default function ResumeAnalyzer() {
           },
 
           body: JSON.stringify({
-            model: "google/gemma-3-27b-it",
+            model: "deepseek/deepseek-chat-v3-0324",
 
             messages: [
               {
@@ -307,6 +307,35 @@ Rules:
 * Explain why missing skills matter.
 * Give role-specific advice only.
 
+
+ATS Score must be calculated using these rules:
+
+Skills Match = 30 points
+Projects Quality = 25 points
+ATS Keywords = 20 points
+Resume Structure = 15 points
+Experience & Certifications = 10 points
+
+Total = ATS Score out of 100.
+
+Do not use default scores.
+
+Different resumes must receive significantly different scores.
+
+If resume contains fewer than 3 relevant projects,
+reduce ATS score by at least 15 points.
+
+If critical role-specific skills are missing,
+reduce ATS score accordingly.
+
+Do not give scores between 40-60 by default.
+
+A weak resume should receive below 30 ATS.
+
+An average resume should receive 40-70 ATS.
+
+A strong resume should receive 75-95 ATS.
+
 `,
               },
 
@@ -336,8 +365,6 @@ Rules:
         content = content.slice(jsonStart, jsonEnd);
 
         const aiData = JSON.parse(content);
-
-        setAnalysis(aiData);
 
         setAnalysis(aiData);
       } else {
