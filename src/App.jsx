@@ -25,6 +25,7 @@ import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import Support from "./pages/Support";
 import ExploreCareer from "./pages/ExploreCareer";
+import ComingSoon from "./pages/ComingSoon";
 
 
 function App() {
@@ -70,6 +71,7 @@ function App() {
       <Route path="/onboarding/time" element={<TimeCommitment />} />
 
       <Route path="/ai-chat" element={<AIChat />} />
+      <Route path="/coming-soon" element={<ComingSoon />} />
      
 
 

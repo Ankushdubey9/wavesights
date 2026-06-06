@@ -10,6 +10,7 @@ import { doc, getDoc } from "firebase/firestore";
 import logo from "../assets/logo.png";
 
 import { db } from "../firebase";
+import { useNavigate } from "react-router-dom";
 
 import {
   saveProgress,
@@ -41,6 +42,7 @@ export default function Dashboard() {
 
   const recommendations = aiData.recommendations || [];
 
+  const navigate = useNavigate();
   useEffect(() => {
     const fetchProgress = async () => {
       try {
@@ -110,43 +112,40 @@ export default function Dashboard() {
           <button className="w-full text-left px-5 py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold shadow-xl shadow-cyan-500/20">
             Dashboard
           </button>
-
           <Link
             to="/profile"
             className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
           >
             👤 Profile
           </Link>
-
           {/* <button
             onClick={() => (window.location.href = "/ai-roadmap")}
             className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
           >
             AI Roadmaps
           </button> */}
-
           <Link
             to="/leaderboard"
             className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
           >
             🏆 Leaderboard
           </Link>
-
           {/* <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300">
             Skill Tracker
-          </button>
-
-          <button className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300">
-            Internship Guidance
           </button> */}
 
+          <button
+            onClick={() => navigate("/coming-soon")}
+            className="w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
+          >
+            Internship Guidance
+          </button>
           {/* <Link
             to="/resume-analyzer"
             className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
           >
             Resume Analyzer
           </Link> */}
-
           {/* <Link
             to="/mock-interview"
             className="block w-full text-left px-5 py-4 rounded-2xl hover:bg-white/5 transition duration-300"
@@ -235,46 +234,35 @@ export default function Dashboard() {
 
         {/* Continue Journey */}
 
-<div className="mb-10 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-8">
+        <div className="mb-10 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-3xl p-8">
+          <h2 className="text-3xl font-black text-cyan-400 mb-4">
+            🚀 Continue Your Journey
+          </h2>
 
-  <h2 className="text-3xl font-black text-cyan-400 mb-4">
-    🚀 Continue Your Journey
-  </h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div>
+              <p className="text-gray-400">Career Goal</p>
+              <h3 className="text-xl font-bold">{careerGoal}</h3>
+            </div>
 
-  <div className="grid md:grid-cols-3 gap-6">
+            <div>
+              <p className="text-gray-400">Progress</p>
+              <h3 className="text-xl font-bold text-cyan-400">
+                {selectedRoadmap.length > 0
+                  ? Math.round(
+                      (completedSteps.length / selectedRoadmap.length) * 100,
+                    )
+                  : 0}
+                %
+              </h3>
+            </div>
 
-    <div>
-      <p className="text-gray-400">Career Goal</p>
-      <h3 className="text-xl font-bold">
-        {careerGoal}
-      </h3>
-    </div>
-
-    <div>
-      <p className="text-gray-400">Progress</p>
-      <h3 className="text-xl font-bold text-cyan-400">
-        {selectedRoadmap.length > 0
-          ? Math.round(
-              (completedSteps.length /
-                selectedRoadmap.length) *
-                100
-            )
-          : 0}
-        %
-      </h3>
-    </div>
-
-    <div>
-      <p className="text-gray-400">Current Streak</p>
-      <h3 className="text-xl font-bold">
-        🔥 {learningStreak} Days
-      </h3>
-    </div>
-
-  </div>
-
-</div>
-
+            <div>
+              <p className="text-gray-400">Current Streak</p>
+              <h3 className="text-xl font-bold">🔥 {learningStreak} Days</h3>
+            </div>
+          </div>
+        </div>
 
         {/* Career Accelerator */}
 
@@ -290,8 +278,8 @@ export default function Dashboard() {
             >
               <div className="text-5xl mb-4">📄</div>
               <span className="inline-block mb-3 px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold">
-  🔥 Most Popular
-</span>
+                🔥 Most Popular
+              </span>
 
               <h3 className="text-xl font-bold text-cyan-400 mb-2">
                 Resume Analyzer
@@ -308,8 +296,8 @@ export default function Dashboard() {
             >
               <div className="text-5xl mb-4">🎤</div>
               <span className="inline-block mb-3 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold">
-  ⭐ Recommended
-</span>
+                ⭐ Recommended
+              </span>
 
               <h3 className="text-xl font-bold text-purple-400 mb-2">
                 Mock Interview
@@ -404,7 +392,6 @@ export default function Dashboard() {
           </div>
         </section> */}
 
-
         {/* Recommendations */}
         <section className="mb-14">
           <h2 className="text-2xl md:text-4xl font-black mb-8">
@@ -439,8 +426,6 @@ export default function Dashboard() {
                   <div className="text-5xl mb-4">
                     {["🚀", "🔥", "💡", "🎯"][index % 4]}
                   </div>
-
-               
 
                   <h3 className="text-xl font-bold text-cyan-400 mb-2">
                     {item.title}
