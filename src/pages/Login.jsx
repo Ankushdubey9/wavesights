@@ -10,15 +10,30 @@ export default function Login() {
   const navigate = useNavigate();
 
   const handleLogin = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate("/goal-selection");
-    } catch (error) {
-      alert(error.message);
-    }
-  };
+  try {
+
+    const userCredential =
+      await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+
+    console.log("Login Success");
+    console.log(userCredential.user);
+
+    navigate("/goal-selection");
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(error.message);
+
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black text-white">

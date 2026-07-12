@@ -1,318 +1,288 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import {
-  collection,
-  getDocs,
-} from "firebase/firestore";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../firebase";
 
-import { db } from "../firebase";
+import Sidebar from "../components/admin/Sidebar";
+import Topbar from "../components/admin/Topbar";
+import DashboardCards from "../components/admin/DashboardCards";
+import AnalyticsChart from "../components/admin/AnalyticsChart";
+import UsersTable from "../components/admin/UsersTable";
+import ContactsTable from "../components/admin/ContactsTable";
+import SubscribersTable from "../components/admin/SubscribersTable";
+import Loading from "../components/admin/Loading";
+
+import {
+  getUsers,
+  getContacts,
+  getSubscribers,
+  deleteUser,
+  deleteContact,
+  deleteSubscriber,
+} from "../services/adminService";
 
 export default function Admin() {
+  const navigate = useNavigate();
 
-  const [usersCount, setUsersCount] =
-    useState(0);
+  // -------------------------
+  // STATES
+  // -------------------------
 
-  const [contacts, setContacts] =
-    useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const [subscribers, setSubscribers] =
-    useState([]);
-    const navigate = useNavigate();
-    
-useEffect(() => {
+  const [active, setActive] = useState("Dashboard");
 
-  const adminEmail =
-    "dubeyankush2385@gmail.com";
+  const [search, setSearch] = useState("");
 
-  const currentUserEmail =
-    localStorage.getItem("email");
+  const [users, setUsers] = useState([]);
 
-  console.log(
-    "Current User:",
-    currentUserEmail
-  );
+  const [contacts, setContacts] = useState([]);
 
-  if (
-    !currentUserEmail ||
-    currentUserEmail !== adminEmail
-  ) {
+  const [subscribers, setSubscribers] = useState([]);
 
-    navigate("/");
-    return;
-  }
+  const [usersCount, setUsersCount] = useState(0);
 
-  fetchData();
+  // -------------------------
+  // FETCH DATA
+  // -------------------------
 
-}, []);
   const fetchData = async () => {
-
     try {
+      const usersData = await getUsers();
 
-      // USERS
+      const contactsData = await getContacts();
 
-      const usersSnapshot =
-        await getDocs(
-          collection(db, "users")
-        );
+      const subscribersData = await getSubscribers();
 
-      setUsersCount(
-        usersSnapshot.size
-      );
+      setUsers(usersData);
 
-      // CONTACTS
+      setContacts(contactsData);
 
-      const contactsSnapshot =
-        await getDocs(
-          collection(db, "contacts")
-        );
+      setSubscribers(subscribersData);
 
-      const contactsData =
-        contactsSnapshot.docs.map(
-          (doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          })
-        );
-
-      setContacts(
-        contactsData
-      );
-
-      // SUBSCRIBERS
-
-      const subscribersSnapshot =
-        await getDocs(
-          collection(
-            db,
-            "subscribers"
-          )
-        );
-
-      const subscribersData =
-        subscribersSnapshot.docs.map(
-          (doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          })
-        );
-
-      setSubscribers(
-        subscribersData
-      );
-
+      setUsersCount(usersData.length);
     } catch (error) {
-
-      console.log(error);
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // -------------------------
+  // AUTH CHECK
+  // -------------------------
+
+  useEffect(() => {
+
+  const unsubscribe = onAuthStateChanged(auth, async (user) => {
+
+    console.log("Current User :", user);
+
+    if (!user) {
+
+      console.log("No user found");
+
+      navigate("/");
+
+      return;
+
+    }
+
+    console.log("User Email :", user.email);
+
+    if (user.email !== "dubeyankush2385@gmail.com") {
+
+      console.log("Not Admin");
+
+      navigate("/");
+
+      return;
+
+    }
+
+    console.log("Admin Login Success");
+
+    fetchData();
+
+  });
+
+  return () => unsubscribe();
+
+}, [navigate]);
+
+  // -------------------------
+  // DELETE FUNCTIONS
+  // -------------------------
+
+  const handleDeleteUser = async (id) => {
+    if (!window.confirm("Delete this user?")) return;
+
+    await deleteUser(id);
+
+    fetchData();
+  };
+
+  const handleDeleteContact = async (id) => {
+    if (!window.confirm("Delete this message?")) return;
+
+    await deleteContact(id);
+
+    fetchData();
+  };
+
+  const handleDeleteSubscriber = async (id) => {
+    if (!window.confirm("Delete subscriber?")) return;
+
+    await deleteSubscriber(id);
+
+    fetchData();
+  };
+
+  if (loading) {
+    return <Loading />;
+  }
   return (
+    <div className="min-h-screen bg-[#020817] text-white flex">
+      {/* Sidebar */}
 
-    <div className="min-h-screen bg-[#020817] text-white p-8">
+      <Sidebar active={active} setActive={setActive} />
 
-      {/* Heading */}
+      {/* Main */}
 
-      <div className="mb-12">
+      <div className="flex-1 overflow-y-auto">
+        {/* Top */}
 
-        <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-sm font-semibold mb-6">
-
-          🚀 WaveSights Admin Panel
-
+        <div className="p-8">
+          <Topbar
+            search={search}
+            setSearch={setSearch}
+            refreshData={fetchData}
+          />
         </div>
 
-        <h1 className="text-5xl md:text-7xl font-black leading-tight">
+        {/* Dashboard */}
 
-          Platform
+        <div className="px-8 pb-10">
+          {/* Welcome */}
 
-          <span className="block text-cyan-400">
+          <div className="mb-10">
+            <div className="inline-flex items-center gap-3 px-5 py-3 rounded-full bg-cyan-500/10 border border-cyan-400/20 text-cyan-300 text-sm font-semibold">
+              🚀 WaveSights Admin Dashboard
+            </div>
 
-            Analytics
+            <h1 className="text-5xl font-black mt-6">Welcome Back</h1>
 
-          </span>
+            <p className="text-gray-400 mt-3 text-lg">
+              Monitor users, messages and platform growth.
+            </p>
+          </div>
 
-        </h1>
+          {/* Dashboard */}
 
-      </div>
+{active === "Dashboard" && (
+  <>
+    <DashboardCards
+      usersCount={usersCount}
+      contactsCount={contacts.length}
+      subscribersCount={subscribers.length}
+    />
 
-      {/* Cards */}
+    <div className="mt-10">
+      <AnalyticsChart
+        users={usersCount}
+        contacts={contacts.length}
+        subscribers={subscribers.length}
+      />
+    </div>
+  </>
+)}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+{/* Users */}
 
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
+{active === "Users" && (
+  <div className="mt-10">
+    <UsersTable
+      users={users}
+      search={search}
+      onDelete={handleDeleteUser}
+    />
+  </div>
+)}
 
-          <h2 className="text-gray-400 text-lg mb-4">
+{/* Contacts */}
 
-            👥 Total Users
+{active === "Contacts" && (
+  <div className="mt-10">
+    <ContactsTable
+      contacts={contacts}
+      search={search}
+      onDelete={handleDeleteContact}
+    />
+  </div>
+)}
 
-          </h2>
+{/* Subscribers */}
 
-          <p className="text-5xl font-black text-cyan-400">
+{active === "Subscribers" && (
+  <div className="mt-10">
+    <SubscribersTable
+      subscribers={subscribers}
+      search={search}
+      onDelete={handleDeleteSubscriber}
+    />
+  </div>
+)}
 
-            {usersCount}
+{/* Analytics */}
 
-          </p>
+{active === "Analytics" && (
+  <div className="mt-10">
+    <AnalyticsChart
+      users={usersCount}
+      contacts={contacts.length}
+      subscribers={subscribers.length}
+    />
+  </div>
+)}
 
+{/* Settings */}
+
+{active === "Settings" && (
+  <div className="mt-10 rounded-3xl bg-white/5 border border-white/10 p-10">
+
+    <h2 className="text-4xl font-black">
+      ⚙ Settings
+    </h2>
+
+    <p className="text-gray-400 mt-4">
+      Admin settings will be available here.
+    </p>
+
+  </div>
+)}
         </div>
+         {/* Footer */}
 
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
+      <footer className="border-t border-white/10 px-8 py-6 bg-[#020817]">
+        <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="text-lg font-bold">WaveSights Admin Panel</h3>
 
-          <h2 className="text-gray-400 text-lg mb-4">
+            <p className="text-gray-400 text-sm">AI Career Guidance Platform</p>
+          </div>
 
-            📩 Contact Messages
+          <div className="flex items-center gap-6 text-gray-400 text-sm">
+            <span>Users : {usersCount}</span>
 
-          </h2>
+            <span>Contacts : {contacts.length}</span>
 
-          <p className="text-5xl font-black text-cyan-400">
-
-            {contacts.length}
-
-          </p>
-
+            <span>Subscribers : {subscribers.length}</span>
+          </div>
         </div>
-
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-8">
-
-          <h2 className="text-gray-400 text-lg mb-4">
-
-            📧 Subscribers
-
-          </h2>
-
-          <p className="text-5xl font-black text-cyan-400">
-
-            {subscribers.length}
-
-          </p>
-
-        </div>
-
+      </footer>
       </div>
-
-      {/* Contacts */}
-
-      <div className="bg-white/5 border border-white/10 rounded-[35px] p-8 mb-16 overflow-x-auto">
-
-        <h2 className="text-3xl font-black mb-8">
-
-          📩 Contact Messages
-
-        </h2>
-
-        <table className="w-full">
-
-          <thead>
-
-            <tr className="text-left text-gray-400 border-b border-white/10">
-
-              <th className="pb-4">
-
-                Name
-
-              </th>
-
-              <th className="pb-4">
-
-                Email
-
-              </th>
-
-              <th className="pb-4">
-
-                Message
-
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {contacts.map((item) => (
-
-              <tr
-                key={item.id}
-                className="border-b border-white/5"
-              >
-
-                <td className="py-5">
-
-                  {item.name}
-
-                </td>
-
-                <td className="py-5">
-
-                  {item.email}
-
-                </td>
-
-                <td className="py-5">
-
-                  {item.message}
-
-                </td>
-
-              </tr>
-            ))}
-
-          </tbody>
-
-        </table>
-
-      </div>
-
-      {/* Subscribers */}
-
-      <div className="bg-white/5 border border-white/10 rounded-[35px] p-8 overflow-x-auto">
-
-        <h2 className="text-3xl font-black mb-8">
-
-          📧 Newsletter Subscribers
-
-        </h2>
-
-        <table className="w-full">
-
-          <thead>
-
-            <tr className="text-left text-gray-400 border-b border-white/10">
-
-              <th className="pb-4">
-
-                Email
-
-              </th>
-
-            </tr>
-
-          </thead>
-
-          <tbody>
-
-            {subscribers.map((item) => (
-
-              <tr
-                key={item.id}
-                className="border-b border-white/5"
-              >
-
-                <td className="py-5">
-
-                  {item.email}
-
-                </td>
-
-              </tr>
-            ))}
-
-          </tbody>
-
-        </table>
-
-      </div>
-
+     
     </div>
   );
 }
