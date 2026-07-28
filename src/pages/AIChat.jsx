@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import ReactMarkdown from "react-markdown";
 
+console.log(import.meta.env);
+
 export default function AIChat() {
   const [messages, setMessages] = useState(() => {
     const savedMessages = localStorage.getItem("wavesights-chat");
@@ -171,32 +173,32 @@ Now answer the user's question.
 `;
 
 
-      const response = await axios.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
-          model: "deepseek/deepseek-chat",
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are WaveSights AI, a smart AI career mentor.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+   const response = await axios.post(
+  "https://api.groq.com/openai/v1/chat/completions",
+  {
+   model: "llama-3.3-70b-versatile",
+    messages: [
+      {
+        role: "system",
+        content: "You are WaveSights AI, a smart AI career mentor.",
+      },
+      {
+        role: "user",
+        content: prompt,
+      },
+    ],
+    temperature: 0.7,
+    max_tokens: 2048,
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
+      "Content-Type": "application/json",
+    },
+  }
+);
 
-      const text =
-        response.data.choices[0].message.content;
+const text = response.data.choices[0].message.content;
 
       const aiMessage = {
         sender: "ai",
@@ -206,16 +208,18 @@ Now answer the user's question.
       setMessages((prev) => [...prev, aiMessage]);
 
     } catch (error) {
-      console.log(error.response?.data || error.message);
+  console.error(error.response?.data || error.message);
 
-      const errorMessage = {
-        sender: "ai",
-        text:
-          "⚠️ WaveSights AI is temporarily unavailable. Please try again.",
-      };
-
-      setMessages((prev) => [...prev, errorMessage]);
-    }
+  setMessages((prev) => [
+    ...prev,
+    {
+      sender: "ai",
+      text:
+        error.response?.data?.error?.message ||
+        "⚠️ AI is temporarily unavailable.",
+    },
+  ]);
+}
 
     setLoading(false);
 
