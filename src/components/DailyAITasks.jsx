@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
-import axios from "axios";
+import { askAI } from "../services/aiService";
+import { taskPrompt } from "../prompts/taskPrompt";
 
 export default function DailyAITasks() {
   const [tasks, setTasks] = useState([]);
@@ -100,35 +101,8 @@ OUTPUT RULES:
 
 Generate the tasks now.
 `;
-      const response = await axios.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
-          model: "meta-llama/llama-3-8b-instruct",
 
-          messages: [
-            {
-              role: "system",
-
-              content: "You are an AI productivity coach.",
-            },
-
-            {
-              role: "user",
-
-              content: prompt,
-            },
-          ],
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
-
-            "Content-Type": "application/json",
-          },
-        },
-      );
-
-      const text = response.data.choices[0].message.content;
+const text = await askAI(taskPrompt, prompt);
 
    const taskArray = text
   .split("\n")

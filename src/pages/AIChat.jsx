@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
-import axios from "axios";
+import { askAI } from "../services/aiService";
+import { chatPrompt } from "../prompts/chatPrompt";
+import { getUserContext } from "../utils/userContext";
 import ReactMarkdown from "react-markdown";
 
 console.log(import.meta.env);
@@ -45,160 +47,19 @@ const [input, setInput] = useState(
     setLoading(true);
 
     try {
-      const interest = localStorage.getItem("interest") || "";
+     
 
-      const goal = localStorage.getItem("goal") || "";
+     const context = getUserContext(messages);
 
-      const skillLevel = localStorage.getItem("skillLevel") || "";
+const userPrompt = `
+${context}
 
-      const stream = localStorage.getItem("educationStream") || "";
-      const xp = localStorage.getItem("xp") || 0;
+User Question:
 
-const streak = localStorage.getItem("streak") || 0;
-
-const completedSkills =
-  JSON.parse(localStorage.getItem("completedSkills")) || [];
-
-      const timeCommitment =
-        localStorage.getItem("timeCommitment") || "";
-
-      const conversationHistory = messages
-        .slice(-5)
-        .map(
-          (msg) =>
-            `${msg.sender === "user" ? "User" : "AI"}: ${msg.text}`
-        )
-        .join("\n");
-
-      const prompt = `
-You are WaveSights AI, an elite AI Career Mentor.
-
-Your mission is to help users build successful careers through personalized guidance, learning plans, project ideas, interview preparation, internships, job search strategies, and motivation.
-
-USER PROFILE:
-
-* Background: ${stream}
-* Interest: ${interest}
-* Goal: ${goal}
-* Skill Level: ${skillLevel}
-* Daily Time Commitment: ${timeCommitment}
-* XP: ${xp}
-* Learning Streak: ${streak}
-* Completed Skills: ${completedSkills.join(", ")}
-
-CONVERSATION HISTORY:
-${conversationHistory}
-
-USER QUESTION:
 ${input}
-
-BEHAVIOR RULES:
-
-1. Understand and answer questions in ANY language.
-2. Reply in the SAME language used by the user.
-3. If the question is unclear, ask a short clarifying question.
-4. Personalize answers using the user's profile.
-5. Focus on practical career growth.
-6. Prioritize action over theory.
-7. Never give generic advice.
-8. Give beginner-friendly explanations when needed.
-9. Give advanced insights for experienced users.
-10. Think like:
-
-* Career Coach
-* Industry Mentor
-* Hiring Manager
-* Technical Interviewer
-* Learning Advisor
-
-FORMAT RULES:
-
-* Use markdown.
-* Use emojis in section headings.
-* Keep answers mobile-friendly.
-* Keep paragraphs short.
-* Use bullet points.
-* Use spacing between sections.
-* Highlight important information.
-
-WHEN RELEVANT ALWAYS INCLUDE:
-
-## 🚀 Next Step
-
-One action the user should do immediately.
-
-## 📚 Learning Resource
-
-Best resource, course, documentation, or learning path.
-
-## 💻 Project Idea
-
-A practical project matching the user's level.
-
-## 🎯 Interview Tip
-
-A useful interview preparation tip.
-
-## 💼 Career Advice
-
-Specific guidance for internships, jobs, freelancing, or career growth.
-
-SPECIAL RULES:
-
-* For coding questions:
-  Explain clearly, then provide clean code.
-
-* For career questions:
-  Give roadmap, salary insights, skills, opportunities, and action plan.
-
-* For resume questions:
-  Act like a recruiter and suggest improvements.
-
-* For interview questions:
-  Act like an interviewer and provide model answers.
-
-* For startup questions:
-  Act like a startup mentor and provide realistic advice.
-
-* For learning questions:
-  Create structured learning plans.
-
-IMPORTANT:
-
-Do not sound robotic.
-Do not use long walls of text.
-Make responses feel premium, practical, personalized, and highly actionable.
-
-Now answer the user's question.
 `;
 
-
-   const response = await axios.post(
-  "https://api.groq.com/openai/v1/chat/completions",
-  {
-   model: "llama-3.3-70b-versatile",
-    messages: [
-      {
-        role: "system",
-        content: "You are WaveSights AI, a smart AI career mentor.",
-      },
-      {
-        role: "user",
-        content: prompt,
-      },
-    ],
-    temperature: 0.7,
-    max_tokens: 2048,
-  },
-  {
-    headers: {
-      Authorization: `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`,
-      "Content-Type": "application/json",
-    },
-  }
-);
-
-const text = response.data.choices[0].message.content;
+const text = await askAI(chatPrompt, userPrompt);
 
       const aiMessage = {
         sender: "ai",

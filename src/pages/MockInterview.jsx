@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { askAI } from "../services/aiService";
+import { interviewQuestionPrompt } from "../prompts/interviewQuestionPrompt";
+import { interviewAnalysisPrompt } from "../prompts/interviewAnalysisPrompt";
 
 export default function MockInterview() {
   const [role, setRole] = useState("Frontend Developer");
@@ -10,7 +13,7 @@ export default function MockInterview() {
 
   const [answer, setAnswer] = useState("");
 
-  const [feedback, setFeedback] = useState("");
+  const [feedback, setFeedback] = useState(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -71,64 +74,21 @@ export default function MockInterview() {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
-          method: "POST",
-
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
-
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify({
-            model: "meta-llama/llama-3-8b-instruct",
-
-            messages: [
-              {
-                role: "system",
-
-                content: `
-You are a professional AI Mock Interviewer.
-
+     const userPrompt = `
 Role: ${role}
 
 Difficulty: ${difficulty}
 
 Interview Type: ${interviewType}
+`;
 
-Generate ONE interview question based on:
+const generatedQuestion = await askAI(
+    interviewQuestionPrompt,
+    userPrompt
+);
 
-- Role
-- Difficulty
-- Interview Type
 
-Examples:
 
-Frontend Developer + Technical
-→ Technical coding question
-
-Frontend Developer + HR
-→ HR question
-
-Frontend Developer + System Design
-→ Architecture/design question
-
-UPSC Personality Test + Current Affairs
-→ Current affairs question
-
-Only ask ONE question.
-`,
-              },
-            ],
-          }),
-        },
-      );
-
-      const data = await response.json();
-
-      const generatedQuestion = data.choices[0].message.content;
 
       setQuestion(generatedQuestion);
 
@@ -158,62 +118,37 @@ Only ask ONE question.
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "https://openrouter.ai/api/v1/chat/completions",
-        {
-          method: "POST",
+     const userPrompt = `
+Interview Role:
+${role}
 
-          headers: {
-            Authorization: `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+Difficulty:
+${difficulty}
 
-            "Content-Type": "application/json",
-          },
+Interview Type:
+${interviewType}
 
-          body: JSON.stringify({
-            model: "meta-llama/llama-3-8b-instruct",
-
-            messages: [
-              {
-                role: "system",
-
-                content: `
-You are an expert AI Interview Coach.
-
-Analyze candidate answer professionally.
-
-Give response in this format:
-
-# Feedback
-
-# Strong Points
-
-# Improvements
-
-# Confidence Score
-
-Add emojis and motivation.
-`,
-              },
-
-              {
-                role: "user",
-
-                content: `
-Interview Question:
+Question:
 ${question}
 
 Candidate Answer:
 ${answer}
-`,
-              },
-            ],
-          }),
-        },
-      );
+`;
 
-      const data = await response.json();
+const text = await askAI(
+  interviewAnalysisPrompt,
+  userPrompt
+);
 
-      setFeedback(data.choices[0].message.content);
+const cleanText = text
+  .replace(/```json/g, "")
+  .replace(/```/g, "")
+  .trim();
+
+const feedbackData = JSON.parse(cleanText);
+
+setFeedback(feedbackData);
+      
     } catch (error) {
       console.log(error);
 
@@ -510,7 +445,7 @@ ${answer}
             <div
               className="bg-cyan-400 h-3 rounded-full transition-all duration-500"
               style={{
-                width: `${Math.min((questionNumber / 10) * 100, 100)}%`,
+                width: `${(questionNumber / totalQuestions) * 100}%`
               }}
             />
           </div>
@@ -640,11 +575,151 @@ ${answer}
 
       {/* Feedback */}
 
-      {feedback && (
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 whitespace-pre-wrap leading-relaxed text-lg">
-          {feedback}
-        </div>
-      )}
+   {feedback && (
+  <div className="space-y-6 mt-8">
+
+    {/* Overall Score */}
+    <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-3xl p-6 border border-cyan-500/30">
+      <h2 className="text-3xl font-black text-cyan-400">
+        🎯 Overall Interview Score
+      </h2>
+
+      <p className="text-7xl font-black mt-4">
+        {feedback.overallScore}/10
+      </p>
+    </div>
+
+    {/* Scores */}
+    <div className="grid md:grid-cols-2 gap-5">
+
+      <div className="bg-white/5 rounded-2xl p-5">
+        💻 Technical : {feedback.technicalScore}/10
+      </div>
+
+      <div className="bg-white/5 rounded-2xl p-5">
+        💬 Communication : {feedback.communicationScore}/10
+      </div>
+
+      <div className="bg-white/5 rounded-2xl p-5">
+        🔥 Confidence : {feedback.confidenceScore}/10
+      </div>
+
+      <div className="bg-white/5 rounded-2xl p-5">
+        🧠 Problem Solving : {feedback.problemSolvingScore}/10
+      </div>
+
+    </div>
+
+    {/* Strengths */}
+
+    <div className="bg-green-500/10 rounded-3xl p-6">
+
+      <h2 className="text-2xl font-bold text-green-400 mb-4">
+        ✅ Strengths
+      </h2>
+
+      <ul className="list-disc pl-6 space-y-2">
+        {feedback.strengths.map((item,index)=>(
+
+          <li key={index}>{item}</li>
+
+        ))}
+      </ul>
+
+    </div>
+
+    {/* Weaknesses */}
+
+    <div className="bg-red-500/10 rounded-3xl p-6">
+
+      <h2 className="text-2xl font-bold text-red-400 mb-4">
+        ❌ Weaknesses
+      </h2>
+
+      <ul className="list-disc pl-6 space-y-2">
+        {feedback.weaknesses.map((item,index)=>(
+
+          <li key={index}>{item}</li>
+
+        ))}
+      </ul>
+
+    </div>
+
+    {/* Missing Points */}
+
+    <div className="bg-yellow-500/10 rounded-3xl p-6">
+
+      <h2 className="text-2xl font-bold text-yellow-400 mb-4">
+        ⚠ Missing Points
+      </h2>
+
+      <ul className="list-disc pl-6 space-y-2">
+        {feedback.missingPoints.map((item,index)=>(
+
+          <li key={index}>{item}</li>
+
+        ))}
+      </ul>
+
+    </div>
+
+    {/* Improvements */}
+
+    <div className="bg-blue-500/10 rounded-3xl p-6">
+
+      <h2 className="text-2xl font-bold text-cyan-400 mb-4">
+        🚀 Improvements
+      </h2>
+
+      <ul className="list-disc pl-6 space-y-2">
+        {feedback.improvements.map((item,index)=>(
+
+          <li key={index}>{item}</li>
+
+        ))}
+      </ul>
+
+    </div>
+
+    {/* Ideal Answer */}
+
+    <div className="bg-purple-500/10 rounded-3xl p-6">
+
+      <h2 className="text-2xl font-bold text-purple-400 mb-4">
+        ⭐ Ideal Answer
+      </h2>
+
+      <p>{feedback.idealAnswer}</p>
+
+    </div>
+
+    {/* Follow Up */}
+
+    <div className="bg-white/5 rounded-3xl p-6">
+
+      <h2 className="text-2xl font-bold text-cyan-400 mb-4">
+        🎤 Follow Up Question
+      </h2>
+
+      <p>{feedback.followUpQuestion}</p>
+
+    </div>
+
+    {/* Interviewer Comment */}
+
+    <div className="bg-white/5 rounded-3xl p-6">
+
+      <h2 className="text-2xl font-bold text-cyan-400 mb-4">
+        👨‍💼 Interviewer's Comment
+      </h2>
+
+      <p>{feedback.interviewerComment}</p>
+
+    </div>
+
+  </div>
+)}
     </div>
   );
 }
