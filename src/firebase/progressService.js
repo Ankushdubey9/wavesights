@@ -7,7 +7,7 @@ import {
 import { db } from "../firebase";
 
 // =====================================================
-// SAVE ROADMAP PROGRESS
+// SAVE LEARNING PROGRESS
 // =====================================================
 
 export const saveProgress = async (
@@ -35,7 +35,9 @@ export const saveProgress = async (
       "Progress Saved:",
       completedSteps
     );
+
   } catch (error) {
+
     console.error(
       "Save progress error:",
       error
@@ -45,14 +47,17 @@ export const saveProgress = async (
   }
 };
 
+
 // =====================================================
-// LOAD ROADMAP PROGRESS
+// LOAD LEARNING PROGRESS
 // =====================================================
 
 export const loadProgress = async (
   userId
 ) => {
+
   try {
+
     const userRef = doc(
       db,
       "users",
@@ -63,6 +68,7 @@ export const loadProgress = async (
       await getDoc(userRef);
 
     if (userSnap.exists()) {
+
       return (
         userSnap.data()
           .completedSteps || []
@@ -70,7 +76,9 @@ export const loadProgress = async (
     }
 
     return [];
+
   } catch (error) {
+
     console.error(
       "Load progress error:",
       error
@@ -80,13 +88,16 @@ export const loadProgress = async (
   }
 };
 
+
 // =====================================================
 // UPDATE LEARNING STREAK
 // =====================================================
 
 export const updateLearningStreak =
   async (userId) => {
+
     try {
+
       const userRef = doc(
         db,
         "users",
@@ -100,6 +111,7 @@ export const updateLearningStreak =
         new Date().toDateString();
 
       if (userSnap.exists()) {
+
         const data =
           userSnap.data();
 
@@ -112,6 +124,7 @@ export const updateLearningStreak =
         if (
           lastActiveDate !== today
         ) {
+
           streak += 1;
 
           await setDoc(
@@ -128,7 +141,9 @@ export const updateLearningStreak =
             }
           );
         }
+
       } else {
+
         await setDoc(
           userRef,
           {
@@ -142,7 +157,9 @@ export const updateLearningStreak =
           }
         );
       }
+
     } catch (error) {
+
       console.error(
         "Update streak error:",
         error
@@ -151,81 +168,15 @@ export const updateLearningStreak =
   };
 
 
-  // =====================================================
+// =====================================================
 // GET USER PLAN / PRO STATUS
-// =====================================================
-
-export const getUserPlan = async (userId) => {
-  try {
-    const userRef = doc(
-      db,
-      "users",
-      userId
-    );
-
-    const userSnap =
-      await getDoc(userRef);
-
-    // User document doesn't exist
-    if (!userSnap.exists()) {
-      return {
-        isPro: false,
-        expiresAt: null,
-      };
-    }
-
-    const data =
-      userSnap.data();
-
-    const plan =
-      data.plan || "free";
-
-    const expiresAt =
-      data.proExpiresAt || null;
-
-    let isPro = false;
-
-    // Check Pro expiry
-    if (
-      plan === "pro" &&
-      expiresAt
-    ) {
-      const expiryDate =
-        expiresAt.toDate
-          ? expiresAt.toDate()
-          : new Date(expiresAt);
-
-      isPro =
-        expiryDate.getTime() >
-        Date.now();
-    }
-
-    return {
-      isPro,
-      expiresAt,
-    };
-
-  } catch (error) {
-
-    console.error(
-      "Get user plan error:",
-      error
-    );
-
-    return {
-      isPro: false,
-      expiresAt: null,
-    };
-  }
-};
-
-// =====================================================
-// GET USER PLAN
 // =====================================================
 
 export const getUserPlan =
   async (userId) => {
+
     try {
+
       const userRef = doc(
         db,
         "users",
@@ -235,11 +186,17 @@ export const getUserPlan =
       const userSnap =
         await getDoc(userRef);
 
+      // -----------------------------------------------
+      // USER DOES NOT EXIST
+      // -----------------------------------------------
+
       if (!userSnap.exists()) {
+
         return {
           plan: "free",
           isPro: false,
           expiresAt: null,
+          activatedAt: null,
         };
       }
 
@@ -252,16 +209,20 @@ export const getUserPlan =
       const expiresAt =
         data.proExpiresAt || null;
 
-      // -----------------------------------------------
-      // CHECK EXPIRY
-      // -----------------------------------------------
+      const activatedAt =
+        data.proActivatedAt || null;
 
       let isPro = false;
+
+      // -----------------------------------------------
+      // CHECK PRO EXPIRY
+      // -----------------------------------------------
 
       if (
         plan === "pro" &&
         expiresAt
       ) {
+
         const expiryDate =
           expiresAt.toDate
             ? expiresAt.toDate()
@@ -272,24 +233,56 @@ export const getUserPlan =
           Date.now();
       }
 
+      // -----------------------------------------------
+      // RETURN PLAN
+      // -----------------------------------------------
+
       return {
-        plan,
+
+        plan:
+          isPro
+            ? "pro"
+            : "free",
+
         isPro,
+
         expiresAt,
-        activatedAt:
-          data.proActivatedAt ||
-          null,
+
+        activatedAt,
       };
+
     } catch (error) {
+
       console.error(
         "Get user plan error:",
         error
       );
 
       return {
+
         plan: "free",
+
         isPro: false,
+
         expiresAt: null,
+
+        activatedAt: null,
       };
     }
+  };
+
+
+// =====================================================
+// QUICK PRO CHECK
+// =====================================================
+
+export const isProUser =
+  async (userId) => {
+
+    const planData =
+      await getUserPlan(
+        userId
+      );
+
+    return planData.isPro;
   };
