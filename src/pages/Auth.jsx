@@ -13,6 +13,7 @@ import {
 
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
+import { initializeUserPlan } from "../services/userPlanManager";
 
 import { useNavigate } from "react-router-dom";
 
@@ -32,131 +33,163 @@ export default function Auth() {
 
   // GOOGLE AUTH
 
-  const googleAuth = async () => {
-    try {
-      setLoading(true);
+ const googleAuth = async () => {
+  try {
+    setLoading(true);
 
-      const provider = new GoogleAuthProvider();
+    const provider = new GoogleAuthProvider();
 
-      const result = await signInWithPopup(auth, provider);
+    const result = await signInWithPopup(auth, provider);
 
-      const user = result.user;
+    const user = result.user;
 
-      const userRef = doc(db, "users", user.uid);
+    const userRef = doc(db, "users", user.uid);
 
-      const userSnap = await getDoc(userRef);
+    const userSnap = await getDoc(userRef);
 
-      // SAVE LOCAL
+    // SAVE LOCAL
+    localStorage.setItem("name", user.displayName || "");
+    localStorage.setItem("photo", user.photoURL || "");
+    localStorage.setItem("email", user.email || "");
 
-      localStorage.setItem("name", user.displayName);
-
-      localStorage.setItem("photo", user.photoURL);
-
-      localStorage.setItem("email", user.email);
-
-      // NEW USER
-
-      if (!userSnap.exists()) {
-        await setDoc(userRef, {
-          name: user.displayName,
-
-          email: user.email,
-
-          photo: user.photoURL,
-
-          xp: 0,
-
-          streak: 1,
-
-          badge: "Starter",
-
-          createdAt: new Date(),
-        });
-
-        navigate("/onboarding/user-type");
-      } else {
-        navigate("/dashboard");
-      }
-    } catch (error) {
-      console.log(error);
-
-      alert(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // EMAIL SIGNUP
-
-  const signup = async () => {
-    try {
-      setLoading(true);
-
-      const result = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password,
-      );
-
-      const user = result.user;
-
-      await updateProfile(user, {
-        displayName: name,
-      });
-
-      await setDoc(doc(db, "users", user.uid), {
-        name,
-
-        email,
-
-        photo: "https://ui-avatars.com/api/?name=" + name,
+    // NEW USER
+    if (!userSnap.exists()) {
+      await setDoc(userRef, {
+        name: user.displayName || "",
+        email: user.email || "",
+        photo: user.photoURL || "",
 
         xp: 0,
-
         streak: 1,
-
         badge: "Starter",
+
+        // SUBSCRIPTION
+        plan: "free",
+        subscriptionStatus: "none",
+
+        // AI USAGE
+        usage: {
+          careerAssessment: 0,
+          careerMentor: 0,
+          mockInterview: 0,
+          resumeAnalysis: 0,
+          careerRoadmap: 0,
+          jobGuidance: 0,
+        },
+
+        // CURRENT MONTH
+        usageMonth: new Date().toISOString().slice(0, 7),
 
         createdAt: new Date(),
       });
 
-      localStorage.setItem("name", name);
-
-      localStorage.setItem("email", email);
-
       navigate("/onboarding/user-type");
-    } catch (error) {
-      alert(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    } else {
+  await initializeUserPlan(user.uid);
+
+  navigate("/dashboard");
+}
+  } catch (error) {
+    console.log(error);
+    alert(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+  // EMAIL SIGNUP
+const signup = async () => {
+  try {
+    setLoading(true);
+
+    const result = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
+
+    const user = result.user;
+
+    await updateProfile(user, {
+      displayName: name,
+    });
+
+    await setDoc(doc(db, "users", user.uid), {
+      name,
+
+      email,
+
+      photo: "https://ui-avatars.com/api/?name=" + name,
+
+      xp: 0,
+
+      streak: 1,
+
+      badge: "Starter",
+
+      // SUBSCRIPTION
+      plan: "free",
+      subscriptionStatus: "none",
+
+      // AI USAGE
+      usage: {
+        careerAssessment: 0,
+        careerMentor: 0,
+        mockInterview: 0,
+        resumeAnalysis: 0,
+        careerRoadmap: 0,
+        jobGuidance: 0,
+      },
+
+      // CURRENT MONTH
+      usageMonth: new Date().toISOString().slice(0, 7),
+
+      createdAt: new Date(),
+    });
+
+    localStorage.setItem("name", name);
+    localStorage.setItem("email", email);
+
+    navigate("/onboarding/user-type");
+  } catch (error) {
+    console.log(error);
+    alert(error.message);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // EMAIL LOGIN
+const login = async () => {
+  try {
+    setLoading(true);
 
-  const login = async () => {
-    try {
-      setLoading(true);
+    const result = await signInWithEmailAndPassword(
+      auth,
+      email,
+      password
+    );
 
-      const result = await signInWithEmailAndPassword(auth, email, password);
+    const user = result.user;
 
-      const user = result.user;
+    // Initialize Free/Pro plan data
+    // for existing users if missing
+    await initializeUserPlan(user.uid);
 
-      localStorage.setItem("email", user.email);
+    localStorage.setItem("email", user.email || "");
+    localStorage.setItem("name", user.displayName || "");
+    localStorage.setItem("photo", user.photoURL || "");
 
-      localStorage.setItem("name", user.displayName);
+    navigate("/dashboard");
 
-      localStorage.setItem("email", user.email);
+  } catch (error) {
+    console.log(error);
+    alert(error.message);
 
-      localStorage.setItem("photo", user.photoURL);
-
-      navigate("/dashboard");
-    } catch (error) {
-      alert(error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleForgotPassword = async () => {
     if (!email) {

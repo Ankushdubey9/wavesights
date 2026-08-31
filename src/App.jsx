@@ -1,8 +1,10 @@
 import { Routes, Route } from "react-router-dom";
 
 import Home from "./Home";
+
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+
 import Dashboard from "./pages/Dashboard";
 import AIChat from "./pages/AIChat";
 import AIRoadmap from "./pages/AIRoadmap";
@@ -26,6 +28,9 @@ import Terms from "./pages/Terms";
 import Support from "./pages/Support";
 import ExploreCareer from "./pages/ExploreCareer";
 import ComingSoon from "./pages/ComingSoon";
+import JobGuidance from "./pages/JobGuidance";
+import SkillTracker from "./pages/SkillTracker";
+import Pricing from "./pages/Pricing";
 
 
 function App() {
@@ -85,6 +90,16 @@ function App() {
   path="/explore-careers"
   element={<ExploreCareer />}
 />
+<Route
+  path="/job-guidance"
+  element={<JobGuidance />}
+/>
+<Route
+  path="/skill-tracker"
+  element={<SkillTracker />}
+/>
+<Route path="/skill-tracker" element={<SkillTracker />} />
+<Route path="/pricing" element={<Pricing />} />
     </Routes>
 </>
   );

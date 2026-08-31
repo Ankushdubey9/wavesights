@@ -4,12 +4,14 @@ import { useState, useEffect } from "react";
 import Loader from "./components/Loader";
 import { motion } from "framer-motion";
 import logo from "./assets/logo.png";
-
+import Pricing from "./components/Pricing";
 // import { useState } from "react";
 
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
-import { db } from "./firebase";
+import { db, auth } from "./firebase";
+import ProStatus from "./components/ProStatus";
+
 
 export default function App() {
   const userName = localStorage.getItem("name");
@@ -336,6 +338,9 @@ export default function App() {
         </nav>
 
         {/* Hero Section */}
+<div className="relative z-40 max-w-6xl mx-auto px-6 pt-28">
+  <ProStatus />
+</div>
 
         <section className="relative px-6 md:px-10 pt-24 pb-20 text-center">
           <div className="max-w-6xl mx-auto relative z-10">
@@ -808,89 +813,7 @@ export default function App() {
           </div>
         </section>
 
-        {/* Pricing Section */}
-        <section id="pricing" className="px-6 md:px-10 py-24">
-          <div className="max-w-6xl mx-auto text-center">
-            <h2 className="text-4xl md:text-6xl font-black mb-6">
-              Simple <span className="text-cyan-400">Pricing</span>
-            </h2>
-
-            <p className="text-gray-400 text-lg md:text-xl mb-16">
-              Start free and unlock advanced AI career guidance as WaveSights
-              grows.
-            </p>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-              {/* FREE PLAN */}
-              <div className="bg-white/5 border border-white/10 rounded-3xl p-10 text-left hover:border-cyan-400/30 transition duration-300">
-                <h3 className="text-3xl font-bold mb-4">Free Plan</h3>
-
-                <p className="text-gray-400 mb-8 text-lg">
-                  Discover the right career path with AI-powered guidance.
-                </p>
-
-                <h4 className="text-6xl font-black mb-8">₹0</h4>
-
-                <ul className="space-y-5 text-gray-300 mb-10 text-lg">
-                  <li>✔ AI Career Assessment</li>
-                  <li>✔ Personalized Career Suggestions</li>
-                  <li>✔ Resume Score Check</li>
-                  <li>✔ 3 Mock Interviews / Month</li>
-                  <li>✔ Career Roadmap Preview</li>
-                  <li>✔ Internship Recommendations</li>
-                  <li>✔ Limited AI Mentor Access</li>
-                </ul>
-
-                <Link
-                  to="/auth"
-                  className="block w-full bg-cyan-500 hover:bg-cyan-400 text-black py-4 rounded-2xl font-bold transition duration-300 hover:scale-[1.02] text-center"
-                >
-                  Start Free
-                </Link>
-              </div>
-
-              {/* PRO PLAN */}
-              <div className="relative bg-cyan-500/10 border border-cyan-400 rounded-3xl p-10 text-left shadow-2xl shadow-cyan-500/10 hover:scale-[1.01] transition duration-300">
-                <div className="absolute top-5 right-5 bg-cyan-400 text-black px-4 py-1 rounded-full text-sm font-black">
-                  ⭐ RECOMMENDED
-                </div>
-
-                <h3 className="text-3xl font-bold mb-4">Pro AI Plan</h3>
-
-                <p className="text-gray-300 mb-8 text-lg">
-                  Advanced personalized AI career planning.
-                </p>
-
-                <h4 className="text-5xl font-black mb-2">
-                  Free for Early Users
-                </h4>
-
-                <p className="text-gray-400 mb-8">
-                  Join early and unlock premium features at no cost.
-                </p>
-
-                <ul className="space-y-5 text-gray-200 mb-10 text-lg">
-                  <li>🔥 Everything in Free</li>
-                  <li>✔ Unlimited AI Career Mentor</li>
-                  <li>✔ Unlimited Mock Interviews</li>
-                  <li>✔ Complete Career Roadmaps</li>
-                  <li>✔ Resume Optimization & ATS Analysis</li>
-                  <li>✔ Personalized Skill Development Plans</li>
-                  <li>✔ Internship Recommendations</li>
-                  <li>✔ Progress Tracking Dashboard</li>
-                  <li>✔ Priority Feature Access</li>
-                </ul>
-
-                <Link
-                  to="/auth"
-                  className="block w-full bg-cyan-400 hover:bg-cyan-300 text-black py-4 rounded-2xl font-bold transition duration-300 hover:scale-[1.02] text-center"
-                >
-                  Unlock Premium Free
-                </Link>
-              </div>
-            </div>
-          </div>
-        </section>
+        <Pricing />
 
         {/* CTA Section */}
         <section className="px-6 md:px-10 pb-24">

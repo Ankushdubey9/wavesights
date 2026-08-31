@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { askAI } from "../services/aiService";
 
 import { resumePrompt } from "../prompts/resumePrompt";
@@ -6,6 +6,26 @@ import { resumePrompt } from "../prompts/resumePrompt";
 import pdfToText from "react-pdftotext";
 
 import ResumeAnalysisResult from "../components/ResumeAnalysisResult";
+
+import { onAuthStateChanged } from "firebase/auth";
+
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  increment,
+} from "firebase/firestore";
+
+import { auth, db } from "../firebase";
+
+import {
+  getPlanLimits,
+  getUserPlan,
+} from "../utils/planAccess";
+
+import { initializeUserPlan } from "../services/userPlanManager";
+
+import UpgradeModal from "../components/UpgradeModal";
 
 export default function ResumeAnalyzer() {
   const [resumeText, setResumeText] = useState("");
@@ -15,7 +35,22 @@ export default function ResumeAnalyzer() {
   const [selectedRole, setSelectedRole] = useState("");
   const [customRole, setCustomRole] = useState("");
 
-  const aiCareerData = JSON.parse(localStorage.getItem("aiCareerData") || "{}");
+  // Firebase user
+  const [currentUser, setCurrentUser] = useState(null);
+
+  // User plan
+  const [userPlan, setUserPlan] = useState("free");
+
+  // Monthly resume analysis usage
+  const [resumeUsage, setResumeUsage] = useState(0);
+
+  // Upgrade modal
+  const [showUpgradeModal, setShowUpgradeModal] =
+    useState(false);
+
+  const aiCareerData = JSON.parse(
+    localStorage.getItem("aiCareerData") || "{}"
+  );
 
   const targetRole =
     selectedRole === "Use My Roadmap Goal"
@@ -23,6 +58,65 @@ export default function ResumeAnalyzer() {
       : selectedRole === "Other"
         ? customRole
         : selectedRole;
+
+  // -----------------------------------------
+  // LOAD USER + PLAN + USAGE
+  // -----------------------------------------
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(
+      auth,
+      async (user) => {
+        setCurrentUser(user);
+
+        if (!user) {
+          setUserPlan("free");
+          setResumeUsage(0);
+          return;
+        }
+
+        try {
+          // Initialize/reset monthly usage
+          await initializeUserPlan(user.uid);
+
+          const userRef = doc(
+            db,
+            "users",
+            user.uid
+          );
+
+          const userSnap = await getDoc(userRef);
+
+          if (!userSnap.exists()) {
+            return;
+          }
+
+          const userData = userSnap.data();
+
+          const plan = getUserPlan(userData);
+
+          const usage = userData.usage || {};
+
+          setUserPlan(plan);
+
+          setResumeUsage(
+            usage.resumeAnalysis || 0
+          );
+        } catch (error) {
+          console.error(
+            "Error loading resume plan:",
+            error
+          );
+        }
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // -----------------------------------------
+  // ANALYZE RESUME
+  // -----------------------------------------
 
   const analyzeResume = async () => {
     if (!targetRole) {
@@ -35,10 +129,81 @@ export default function ResumeAnalyzer() {
       return;
     }
 
-    setLoading(true);
+    // Make sure user is logged in
+    if (!currentUser) {
+      alert(
+        "Please login to use Resume Analyzer."
+      );
+      return;
+    }
 
     try {
-    const prompt = `
+      // Make sure monthly usage is initialized/reset
+      await initializeUserPlan(
+        currentUser.uid
+      );
+
+      // Get latest user data
+      const userRef = doc(
+        db,
+        "users",
+        currentUser.uid
+      );
+
+      const userSnap = await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        alert(
+          "Your account information could not be found."
+        );
+
+        return;
+      }
+
+      const userData = userSnap.data();
+
+      // Get current plan
+      const plan = getUserPlan(userData);
+
+      // Get plan limits
+      const limits = getPlanLimits(userData);
+
+      // Current monthly usage
+      const currentUsage =
+        userData.usage?.resumeAnalysis || 0;
+
+      const resumeLimit =
+        limits.resumeAnalyses;
+
+      // -----------------------------------------
+      // CHECK PLAN LIMIT
+      // -----------------------------------------
+
+      if (currentUsage >= resumeLimit) {
+        setUserPlan(plan);
+        setResumeUsage(currentUsage);
+
+        // Free user → show Upgrade Modal
+        if (plan === "free") {
+          setShowUpgradeModal(true);
+        } else {
+          // Pro should be unlimited.
+          // Safety fallback only.
+          alert(
+            "⚠️ Resume Analysis is temporarily unavailable. Please try again."
+          );
+        }
+
+        return;
+      }
+
+      setLoading(true);
+
+      // -----------------------------------------
+      // AI PROMPT
+      // -----------------------------------------
+
+      const prompt = `
 Target Role:
 ${targetRole}
 
@@ -47,206 +212,323 @@ Resume:
 ${resumeText}
 `;
 
-const text = await askAI(
-  resumePrompt,
-  prompt
-);
-  const jsonStart = text.indexOf("{");
+      // -----------------------------------------
+      // CALL AI
+      // -----------------------------------------
 
-const jsonEnd = text.lastIndexOf("}") + 1;
+      const text = await askAI(
+        resumePrompt,
+        prompt
+      );
 
-const content = text.slice(jsonStart, jsonEnd);
+      // -----------------------------------------
+      // PARSE AI RESPONSE
+      // -----------------------------------------
 
-const aiData = JSON.parse(content);
+      const jsonStart =
+        text.indexOf("{");
 
-setAnalysis(aiData);
-     
+      const jsonEnd =
+        text.lastIndexOf("}") + 1;
+
+      if (
+        jsonStart === -1 ||
+        jsonEnd === 0
+      ) {
+        throw new Error(
+          "Invalid AI response format."
+        );
+      }
+
+      const content =
+        text.slice(
+          jsonStart,
+          jsonEnd
+        );
+
+      const aiData =
+        JSON.parse(content);
+
+      // -----------------------------------------
+      // SHOW ANALYSIS
+      // -----------------------------------------
+
+      setAnalysis(aiData);
+
+      // -----------------------------------------
+      // INCREMENT USAGE
+      // ONLY AFTER SUCCESSFUL ANALYSIS
+      // -----------------------------------------
+
+      await updateDoc(userRef, {
+        "usage.resumeAnalysis":
+          increment(1),
+      });
+
+      // Update local usage
+      setUserPlan(plan);
+
+      setResumeUsage(
+        currentUsage + 1
+      );
+
     } catch (error) {
-      console.log(error);
+      console.log(
+        "Resume analysis error:",
+        error
+      );
 
-      alert("Resume analysis failed");
+      alert(
+        "Resume analysis failed"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white p-6 md:p-10">
-      <h1 className="text-5xl md:text-7xl font-black text-cyan-400 mb-6">
-        AI Resume Analyzer 🚀
-      </h1>
+    <>
+      <div className="min-h-screen bg-[#020617] text-white p-6 md:p-10">
+        <h1 className="text-5xl md:text-7xl font-black text-cyan-400 mb-6">
+          AI Resume Analyzer 🚀
+        </h1>
 
-      <p className="text-gray-400 text-lg mb-10">
-        Paste your resume below and get AI-powered career analysis.
-      </p>
+        <p className="text-gray-400 text-lg mb-10">
+          Paste your resume below and get AI-powered career analysis.
+        </p>
 
-      <div className="mb-8">
+        <div className="mb-8">
 
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-10">
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-10">
 
-  <h2 className="text-2xl font-bold mb-4 text-cyan-300">
-    🎯 Select Target Role
-  </h2>
+            <h2 className="text-2xl font-bold mb-4 text-cyan-300">
+              🎯 Select Target Role
+            </h2>
 
-  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
 
-    {[
-      "Use My Roadmap Goal",
-      "Full Stack Developer",
-      "Frontend Developer",
-      "Backend Developer",
-      "Software Engineer",
-      "Data Analyst",
-      "AI Engineer",
-      "QA Engineer",
-      "Cyber Security Analyst",
-      "Other",
-    ].map((role) => (
-      <button
-        key={role}
-        onClick={() => setSelectedRole(role)}
-        className={`
-          p-4 rounded-2xl border transition-all duration-300 text-left
+              {[
+                "Use My Roadmap Goal",
+                "Full Stack Developer",
+                "Frontend Developer",
+                "Backend Developer",
+                "Software Engineer",
+                "Data Analyst",
+                "AI Engineer",
+                "QA Engineer",
+                "Cyber Security Analyst",
+                "Other",
+              ].map((role) => (
+                <button
+                  key={role}
+                  onClick={() =>
+                    setSelectedRole(role)
+                  }
+                  className={`
+                    p-4 rounded-2xl border transition-all duration-300 text-left
 
-          ${
-            selectedRole === role
-              ? "bg-cyan-500 text-black border-cyan-400 scale-105"
-              : "bg-white/5 border-white/10 hover:border-cyan-400 hover:bg-cyan-500/10"
-          }
-        `}
-      >
-        <div className="font-bold">
+                    ${
+                      selectedRole === role
+                        ? "bg-cyan-500 text-black border-cyan-400 scale-105"
+                        : "bg-white/5 border-white/10 hover:border-cyan-400 hover:bg-cyan-500/10"
+                    }
+                  `}
+                >
+                  <div className="font-bold">
 
-          {role === "Use My Roadmap Goal" && "🎯 "}
-          {role === "Full Stack Developer" && "💻 "}
-          {role === "Frontend Developer" && "🎨 "}
-          {role === "Backend Developer" && "⚙️ "}
-          {role === "Software Engineer" && "🚀 "}
-          {role === "Data Analyst" && "📊 "}
-          {role === "AI Engineer" && "🤖 "}
-          {role === "QA Engineer" && "🧪 "}
-          {role === "Cyber Security Analyst" && "🔒 "}
-          {role === "Other" && "✨ "}
+                    {role === "Use My Roadmap Goal" &&
+                      "🎯 "}
 
-          {role}
+                    {role === "Full Stack Developer" &&
+                      "💻 "}
+
+                    {role === "Frontend Developer" &&
+                      "🎨 "}
+
+                    {role === "Backend Developer" &&
+                      "⚙️ "}
+
+                    {role === "Software Engineer" &&
+                      "🚀 "}
+
+                    {role === "Data Analyst" &&
+                      "📊 "}
+
+                    {role === "AI Engineer" &&
+                      "🤖 "}
+
+                    {role === "QA Engineer" &&
+                      "🧪 "}
+
+                    {role === "Cyber Security Analyst" &&
+                      "🔒 "}
+
+                    {role === "Other" &&
+                      "✨ "}
+
+                    {role}
+                  </div>
+                </button>
+              ))}
+
+            </div>
+
+          </div>
+
+          {selectedRole === "Other" && (
+            <input
+              type="text"
+              placeholder="Enter your target role..."
+              value={customRole}
+              onChange={(e) =>
+                setCustomRole(e.target.value)
+              }
+              className="w-full mt-4 mb-8 bg-white/5 border border-white/10 rounded-2xl p-4"
+            />
+          )}
+
+          <input
+            type="file"
+            accept=".pdf"
+            onChange={async (e) => {
+              const file =
+                e.target.files[0];
+
+              if (!file) return;
+
+              try {
+                const text =
+                  await pdfToText(file);
+
+                console.log(text);
+
+                setResumeText(text);
+              } catch (error) {
+                console.log(error);
+
+                alert(
+                  "PDF extraction failed"
+                );
+              }
+            }}
+            className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 mb-8"
+          />
+
+          {resumeText && (
+            <div className="mt-6 bg-white/5 border border-white/10 rounded-3xl p-6 max-h-72 overflow-y-auto">
+              <p className="text-gray-300 whitespace-pre-wrap">
+                {resumeText.slice(0, 2000)}
+              </p>
+            </div>
+          )}
+
+          <button
+            onClick={analyzeResume}
+            className="mt-4 px-8 py-4 rounded-2xl bg-cyan-400 text-black font-bold text-lg hover:scale-105 transition-all"
+          >
+            {loading
+              ? "Analyzing..."
+              : "Analyze Resume"}
+          </button>
+
         </div>
-      </button>
-    ))}
 
-  </div>
+        {analysis && (
+          <div className="mt-10">
 
-</div>
-{selectedRole === "Other" && (
-  <input
-    type="text"
-    placeholder="Enter your target role..."
-    value={customRole}
-    onChange={(e) => setCustomRole(e.target.value)}
-    className="w-full mt-4 mb-8 bg-white/5 border border-white/10 rounded-2xl p-4"
-  />
-)}
+            {/* Header */}
 
-      <input
-        type="file"
-        accept=".pdf"
-        onChange={async (e) => {
-          const file = e.target.files[0];
+            <div className="mb-6">
 
-          if (!file) return;
+              <h2 className="text-4xl font-black text-cyan-400">
+                Resume Analysis Report 🤖
+              </h2>
 
-          try {
-            const text = await pdfToText(file);
+              <p className="text-gray-400 mt-2">
+                AI-powered ATS and Career Analysis
+              </p>
 
-            console.log(text);
+            </div>
 
-            setResumeText(text);
-          } catch (error) {
-            console.log(error);
+            {/* Main Report Card */}
 
-            alert("PDF extraction failed");
-          }
-        }}
-        className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 mb-8"
-      />
+            <div className="bg-gradient-to-br from-white/5 to-cyan-500/5 border border-cyan-500/20 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
 
-      {resumeText && (
-        <div className="mt-6 bg-white/5 border border-white/10 rounded-3xl p-6 max-h-72 overflow-y-auto">
-          <p className="text-gray-300 whitespace-pre-wrap">
-            {resumeText.slice(0, 2000)}
-          </p>
-        </div>
-      )}
+              {/* Decorative Top Bar */}
 
-      <button
-        onClick={analyzeResume}
-       className="mt-4 px-8 py-4 rounded-2xl bg-cyan-400 text-black font-bold text-lg hover:scale-105 transition-all"
-      >
-        {loading ? "Analyzing..." : "Analyze Resume"}
-      </button>
+              <div className="h-1 w-32 bg-cyan-400 rounded-full mb-8"></div>
+
+              <div
+                className="
+                  prose
+                  prose-invert
+                  max-w-none
+
+                  prose-headings:text-cyan-300
+                  prose-headings:font-bold
+
+                  prose-h1:text-4xl
+                  prose-h1:mb-6
+
+                  prose-h2:text-3xl
+                  prose-h2:mt-10
+
+                  prose-h3:text-2xl
+
+                  prose-p:text-gray-300
+                  prose-p:leading-relaxed
+
+                  prose-strong:text-white
+
+                  prose-li:text-gray-300
+
+                  prose-ul:space-y-2
+
+                  prose-table:border
+                  prose-table:border-white/10
+
+                  prose-th:text-cyan-300
+                  prose-th:border
+                  prose-th:border-white/10
+
+                  prose-td:border
+                  prose-td:border-white/10
+
+                  prose-blockquote:border-cyan-400
+                  prose-blockquote:text-gray-300
+                "
+              >
+                {analysis && (
+                  <ResumeAnalysisResult
+                    analysis={analysis}
+                  />
+                )}
+              </div>
+
+            </div>
+
+          </div>
+        )}
 
       </div>
-      {analysis && (
-        <div className="mt-10">
-          {/* Header */}
-          <div className="mb-6">
-            <h2 className="text-4xl font-black text-cyan-400">
-              Resume Analysis Report 🤖
-            </h2>
-            <p className="text-gray-400 mt-2">
-              AI-powered ATS and Career Analysis
-            </p>
-          </div>
 
-          {/* Main Report Card */}
-          <div className="bg-gradient-to-br from-white/5 to-cyan-500/5 border border-cyan-500/20 rounded-3xl p-8 shadow-2xl backdrop-blur-sm">
-            {/* Decorative Top Bar */}
-            <div className="h-1 w-32 bg-cyan-400 rounded-full mb-8"></div>
+      {/* ----------------------------------------- */}
+      {/* UPGRADE MODAL */}
+      {/* ----------------------------------------- */}
 
-            <div
-              className="
-          prose
-          prose-invert
-          max-w-none
-
-          prose-headings:text-cyan-300
-          prose-headings:font-bold
-
-          prose-h1:text-4xl
-          prose-h1:mb-6
-
-          prose-h2:text-3xl
-          prose-h2:mt-10
-
-          prose-h3:text-2xl
-
-          prose-p:text-gray-300
-          prose-p:leading-relaxed
-
-          prose-strong:text-white
-
-          prose-li:text-gray-300
-
-          prose-ul:space-y-2
-
-          prose-table:border
-          prose-table:border-white/10
-
-          prose-th:text-cyan-300
-          prose-th:border
-          prose-th:border-white/10
-
-          prose-td:border
-          prose-td:border-white/10
-
-          prose-blockquote:border-cyan-400
-          prose-blockquote:text-gray-300
-        "
-            >
-              {analysis && <ResumeAnalysisResult analysis={analysis} />}
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() =>
+          setShowUpgradeModal(false)
+        }
+        feature="Resume Analysis"
+        currentUsage={resumeUsage}
+        limit={
+          userPlan === "free"
+            ? 5
+            : undefined
+        }
+      />
+    </>
   );
 }

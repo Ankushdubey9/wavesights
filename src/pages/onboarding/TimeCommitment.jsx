@@ -25,27 +25,28 @@ export default function TimeCommitment() {
 
     if (user) {
 
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          userType:
-            localStorage.getItem("userType"),
+    await setDoc(
+  doc(db, "users", user.uid),
+  {
+    userType:
+      localStorage.getItem("userType"),
 
-          educationStream:
-            localStorage.getItem("educationStream"),
+    educationStream:
+      localStorage.getItem("educationStream"),
 
-          interest:
-            localStorage.getItem("interest"),
+    interest:
+      localStorage.getItem("interest"),
 
-          goal:
-            localStorage.getItem("goal"),
+    goal:
+      localStorage.getItem("goal"),
 
-          skillLevel:
-            localStorage.getItem("skillLevel"),
+    skillLevel:
+      localStorage.getItem("skillLevel"),
 
-          timeCommitment: selected,
-        }
-      );
+    timeCommitment: selected,
+  },
+  { merge: true }
+);
 
       console.log("User profile saved");
 

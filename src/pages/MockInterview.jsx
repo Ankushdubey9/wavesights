@@ -1,25 +1,134 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { askAI } from "../services/aiService";
 import { interviewQuestionPrompt } from "../prompts/interviewQuestionPrompt";
 import { interviewAnalysisPrompt } from "../prompts/interviewAnalysisPrompt";
 
+import { onAuthStateChanged } from "firebase/auth";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  increment,
+} from "firebase/firestore";
+
+import { auth, db } from "../firebase";
+
+import {
+  getPlanLimits,
+  getUserPlan,
+} from "../utils/planAccess";
+
+import { initializeUserPlan } from "../services/userPlanManager";
+
+import UpgradeModal from "../components/UpgradeModal";
+
 export default function MockInterview() {
-  const [role, setRole] = useState("Frontend Developer");
+  const [role, setRole] =
+    useState("Frontend Developer");
 
-  const [difficulty, setDifficulty] = useState("Easy");
-  const [interviewType, setInterviewType] = useState("Mixed");
+  const [difficulty, setDifficulty] =
+    useState("Easy");
 
-  const [question, setQuestion] = useState("");
+  const [interviewType, setInterviewType] =
+    useState("Mixed");
 
-  const [answer, setAnswer] = useState("");
+  const [question, setQuestion] =
+    useState("");
 
-  const [feedback, setFeedback] = useState(null);
+  const [answer, setAnswer] =
+    useState("");
 
-  const [loading, setLoading] = useState(false);
+  const [feedback, setFeedback] =
+    useState(null);
 
-  const [questionNumber, setQuestionNumber] = useState(1);
+  const [loading, setLoading] =
+    useState(false);
+
+  const [questionNumber, setQuestionNumber] =
+    useState(1);
+
   const [totalQuestions, setTotalQuestions] =
-  useState(5);
+    useState(5);
+
+  // Firebase user
+  const [currentUser, setCurrentUser] =
+    useState(null);
+
+  // Plan and monthly interview usage
+  const [userPlan, setUserPlan] =
+    useState("free");
+
+  const [interviewUsage, setInterviewUsage] =
+    useState(0);
+
+  // Upgrade Modal
+  const [showUpgradeModal, setShowUpgradeModal] =
+    useState(false);
+
+  // -----------------------------------------
+  // LOAD USER + PLAN
+  // -----------------------------------------
+
+  useEffect(() => {
+    const unsubscribe =
+      onAuthStateChanged(
+        auth,
+        async (user) => {
+          setCurrentUser(user);
+
+          if (!user) {
+            setUserPlan("free");
+            setInterviewUsage(0);
+            return;
+          }
+
+          try {
+            await initializeUserPlan(
+              user.uid
+            );
+
+            const userRef = doc(
+              db,
+              "users",
+              user.uid
+            );
+
+            const userSnap =
+              await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+              return;
+            }
+
+            const userData =
+              userSnap.data();
+
+            const plan =
+              getUserPlan(userData);
+
+            const usage =
+              userData.usage || {};
+
+            setUserPlan(plan);
+
+            setInterviewUsage(
+              usage.mockInterview || 0
+            );
+          } catch (error) {
+            console.error(
+              "Error loading interview plan:",
+              error
+            );
+          }
+        }
+      );
+
+    return () => unsubscribe();
+  }, []);
+
+  // -----------------------------------------
+  // INTERVIEW TYPES
+  // -----------------------------------------
 
   const getInterviewTypes = () => {
     if (
@@ -36,10 +145,21 @@ export default function MockInterview() {
         "DevOps Engineer",
       ].includes(role)
     ) {
-      return ["Technical", "HR", "Mixed", "System Design", "Behavioral"];
+      return [
+        "Technical",
+        "HR",
+        "Mixed",
+        "System Design",
+        "Behavioral",
+      ];
     }
 
-    if (["Product Manager", "Startup Founder"].includes(role)) {
+    if (
+      [
+        "Product Manager",
+        "Startup Founder",
+      ].includes(role)
+    ) {
       return [
         "Product Thinking",
         "Case Study",
@@ -49,7 +169,9 @@ export default function MockInterview() {
       ];
     }
 
-    if (role === "UPSC Personality Test") {
+    if (
+      role === "UPSC Personality Test"
+    ) {
       return [
         "Personality Test",
         "Current Affairs",
@@ -59,22 +181,109 @@ export default function MockInterview() {
       ];
     }
 
-    if (role === "Banking Interview") {
-      return ["Banking Knowledge", "Current Affairs", "HR", "Mixed"];
+    if (
+      role === "Banking Interview"
+    ) {
+      return [
+        "Banking Knowledge",
+        "Current Affairs",
+        "HR",
+        "Mixed",
+      ];
     }
 
     return ["Mixed"];
   };
 
+  // -----------------------------------------
+  // START / NEXT QUESTION
+  // -----------------------------------------
+
   const startInterview = async () => {
-    if (!question) {
-      setQuestionNumber(1);
+    // Login check
+    if (!currentUser) {
+      alert(
+        "Please login to use Mock Interview."
+      );
+      return;
     }
 
-    setLoading(true);
-
     try {
-     const userPrompt = `
+      // Initialize/reset monthly usage
+      await initializeUserPlan(
+        currentUser.uid
+      );
+
+      // Latest Firebase user data
+      const userRef = doc(
+        db,
+        "users",
+        currentUser.uid
+      );
+
+      const userSnap =
+        await getDoc(userRef);
+
+      if (!userSnap.exists()) {
+        alert(
+          "Your account information could not be found."
+        );
+        return;
+      }
+
+      const userData =
+        userSnap.data();
+
+      // Current plan
+      const plan =
+        getUserPlan(userData);
+
+      // Plan limits
+      const limits =
+        getPlanLimits(userData);
+
+      // Current monthly usage
+      const currentUsage =
+        userData.usage?.mockInterview || 0;
+
+      const interviewLimit =
+        limits.mockInterviews;
+
+      // IMPORTANT:
+      // Only a brand-new interview consumes
+      // one monthly interview.
+      const isNewInterview =
+        !question;
+
+      // -----------------------------------------
+      // FREE LIMIT CHECK
+      // -----------------------------------------
+
+      if (
+        isNewInterview &&
+        currentUsage >= interviewLimit
+      ) {
+        setUserPlan(plan);
+        setInterviewUsage(
+          currentUsage
+        );
+
+        if (plan === "free") {
+          setShowUpgradeModal(true);
+        } else {
+          // Pro should be unlimited.
+          // This is only a safety fallback.
+          alert(
+            "⚠️ Mock Interview is temporarily unavailable. Please try again."
+          );
+        }
+
+        return;
+      }
+
+      setLoading(true);
+
+      const userPrompt = `
 Role: ${role}
 
 Difficulty: ${difficulty}
@@ -82,35 +291,67 @@ Difficulty: ${difficulty}
 Interview Type: ${interviewType}
 `;
 
-const generatedQuestion = await askAI(
-    interviewQuestionPrompt,
-    userPrompt
-);
+      const generatedQuestion =
+        await askAI(
+          interviewQuestionPrompt,
+          userPrompt
+        );
 
+      setQuestion(
+        generatedQuestion
+      );
 
+      // -----------------------------------------
+      // COUNT ONLY NEW INTERVIEW
+      // -----------------------------------------
 
+      if (isNewInterview) {
+        await updateDoc(userRef, {
+          "usage.mockInterview":
+            increment(1),
+        });
 
-      setQuestion(generatedQuestion);
+        setInterviewUsage(
+          currentUsage + 1
+        );
 
-      const speech = new SpeechSynthesisUtterance(generatedQuestion);
+        setUserPlan(plan);
+
+        setQuestionNumber(1);
+      }
+
+      // Voice question
+      const speech =
+        new SpeechSynthesisUtterance(
+          generatedQuestion
+        );
 
       speech.lang = "en-US";
-
       speech.rate = 1;
 
-      window.speechSynthesis.speak(speech);
+      window.speechSynthesis.speak(
+        speech
+      );
     } catch (error) {
       console.log(error);
 
-      alert("Failed to generate question");
+      alert(
+        "Failed to generate question"
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // -----------------------------------------
+  // ANALYZE ANSWER
+  // -----------------------------------------
+
   const analyzeAnswer = async () => {
     if (!answer) {
-      alert("Write your answer first!");
+      alert(
+        "Write your answer first!"
+      );
 
       return;
     }
@@ -118,7 +359,7 @@ const generatedQuestion = await askAI(
     setLoading(true);
 
     try {
-     const userPrompt = `
+      const userPrompt = `
 Interview Role:
 ${role}
 
@@ -135,591 +376,819 @@ Candidate Answer:
 ${answer}
 `;
 
-const text = await askAI(
-  interviewAnalysisPrompt,
-  userPrompt
-);
+      const text = await askAI(
+        interviewAnalysisPrompt,
+        userPrompt
+      );
 
-const cleanText = text
-  .replace(/```json/g, "")
-  .replace(/```/g, "")
-  .trim();
+      const cleanText = text
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
 
-const feedbackData = JSON.parse(cleanText);
+      const feedbackData =
+        JSON.parse(cleanText);
 
-setFeedback(feedbackData);
-      
+      setFeedback(feedbackData);
     } catch (error) {
       console.log(error);
 
-      alert("Answer analysis failed");
+      alert(
+        "Answer analysis failed"
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // -----------------------------------------
+  // UI
+  // -----------------------------------------
+
   return (
-    <div className="min-h-screen bg-[#020617] text-white p-6 md:p-10">
-      <h1 className="text-5xl md:text-7xl font-black text-cyan-400 mb-6">
-        AI Mock Interview 🎤
-      </h1>
+    <>
+      <div className="min-h-screen bg-[#020617] text-white p-6 md:p-10">
 
-      <p className="text-gray-400 text-lg mb-10">
-        Practice interviews with AI and improve your confidence 🚀
-      </p>
+        <h1 className="text-5xl md:text-7xl font-black text-cyan-400 mb-6">
+          AI Mock Interview 🎤
+        </h1>
 
-      {/* Role + Difficulty */}
+        <p className="text-gray-400 text-lg mb-10">
+          Practice interviews with AI and improve your confidence 🚀
+        </p>
 
-      <div className="flex flex-col md:flex-row gap-4 mb-8">
-        {/* ROLE SELECTION */}
+        {/* Role + Difficulty */}
 
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-8">
-          <h2 className="text-3xl font-black text-cyan-300 mb-6">
-            🎯 Select Interview Role
-          </h2>
+        <div className="flex flex-col md:flex-row gap-4 mb-8">
 
-          {/* TECH ROLES */}
-
-          <div className="mb-8">
-            <h3 className="text-xl font-bold text-cyan-400 mb-4">
-              💻 Tech Careers
-            </h3>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                "Frontend Developer",
-                "Backend Developer",
-                "Full Stack Developer",
-                "React Developer",
-                "AI Engineer",
-                "Data Analyst",
-                "Software Engineer",
-                "Cyber Security Analyst",
-                "Cloud Engineer",
-                "DevOps Engineer",
-              ].map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setRole(item)}
-                  className={`
-            p-4 rounded-2xl border text-sm md:text-base
-            transition-all duration-300
-
-            ${
-              role === item
-                ? "bg-cyan-400 text-black border-cyan-300 scale-105 shadow-lg shadow-cyan-500/30"
-                : "bg-white/5 border-white/10 hover:border-cyan-400 hover:bg-cyan-500/10"
-            }
-          `}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* CORPORATE ROLES */}
-
-          <div className="mb-8">
-            <h3 className="text-xl font-bold text-purple-400 mb-4">
-              🏢 Corporate Careers
-            </h3>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                "Product Manager",
-                "Digital Marketing",
-                "HR Interview",
-                "Startup Founder",
-                "MBA Interview",
-              ].map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setRole(item)}
-                  className={`
-            p-4 rounded-2xl border text-sm md:text-base
-            transition-all duration-300
-
-            ${
-              role === item
-                ? "bg-purple-400 text-black border-purple-300 scale-105 shadow-lg shadow-purple-500/30"
-                : "bg-white/5 border-white/10 hover:border-purple-400 hover:bg-purple-500/10"
-            }
-          `}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* GOVERNMENT ROLES */}
-
-          <div>
-            <h3 className="text-xl font-bold text-green-400 mb-4">
-              🏛 Government & Public Sector
-            </h3>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                "SSC Interview",
-                "UPSC Personality Test",
-                "Banking Interview",
-                "Railway Interview",
-                "Defense Interview",
-                "Police Interview",
-                "Teaching Interview",
-              ].map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setRole(item)}
-                  className={`
-            p-4 rounded-2xl border text-sm md:text-base
-            transition-all duration-300
-
-            ${
-              role === item
-                ? "bg-green-400 text-black border-green-300 scale-105 shadow-lg shadow-green-500/30"
-                : "bg-white/5 border-white/10 hover:border-green-400 hover:bg-green-500/10"
-            }
-          `}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-        <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-8">
-          <h2 className="text-2xl font-bold text-cyan-300 mb-4">
-            ⚡ Select Difficulty
-          </h2>
-
-          <div className="flex flex-wrap gap-4">
-            {["Easy", "Medium", "Hard"].map((item) => (
-              <button
-                key={item}
-                onClick={() => setDifficulty(item)}
-                className={`
-          px-8 py-4 rounded-2xl border font-bold
-          transition-all duration-300
-
-          ${
-            difficulty === item
-              ? "bg-cyan-400 text-black border-cyan-300 scale-105"
-              : "bg-white/5 border-white/10 hover:border-cyan-400"
-          }
-        `}
-              >
-                {item}
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-8">
-            <h2 className="text-2xl font-bold text-cyan-300 mb-4">
-              🧠 Interview Type
-            </h2>
-
-            <div className="flex flex-wrap gap-3">
-              {getInterviewTypes().map((item) => (
-                <button
-                  key={item}
-                  onClick={() => setInterviewType(item)}
-                  className={`
-          px-4 py-3 rounded-2xl border transition-all
-
-          ${
-            interviewType === item
-              ? "bg-cyan-400 text-black border-cyan-300"
-              : "bg-white/5 border-white/10"
-          }
-        `}
-                >
-                  {item}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-8">
-
-  <h2 className="text-2xl font-bold text-cyan-300 mb-4">
-    📋 Number of Questions
-  </h2>
-
-  <div className="flex gap-3 flex-wrap">
-
-    {[3, 5, 10].map((count) => (
-
-      <button
-        key={count}
-        onClick={() =>
-          setTotalQuestions(count)
-        }
-        className={`
-          px-5 py-3 rounded-2xl border
-
-          ${
-            totalQuestions === count
-              ? "bg-cyan-400 text-black"
-              : "bg-white/5 border-white/10"
-          }
-        `}
-      >
-        {count} Questions
-      </button>
-
-    ))}
-
-  </div>
-
-</div>
-
-          {/* INTERVIEW PREVIEW */}
-
-          <div className="mt-8 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-3xl p-6">
-            <h3 className="text-xl font-bold text-cyan-300 mb-4">
-              🚀 Interview Preview
-            </h3>
-
-            <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-gray-400">Role</span>
-                <span className="font-bold">{role}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-400">Difficulty</span>
-                <span className="font-bold">{difficulty}</span>
-              </div>
-
-              <div className="flex justify-between">
-                <span className="text-gray-400">Interview Type</span>
-
-                <span className="font-bold">{interviewType}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* FEATURES */}
-
-          <div className="mt-6 bg-white/5 border border-white/10 rounded-3xl p-6">
-            <h3 className="text-xl font-bold text-cyan-300 mb-4">
-              📋 What You'll Get
-            </h3>
-
-            <div className="space-y-3 text-gray-300">
-              <div>✅ AI-generated interview question</div>
-
-              <div>✅ Voice answer practice</div>
-
-              <div>✅ Technical evaluation</div>
-
-              <div>✅ Communication feedback</div>
-
-              <div>✅ Confidence score</div>
-
-              <div>✅ Personalized improvements</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Start Interview */}
-
-      <div className="mb-10">
-        <button
-          onClick={startInterview}
-          className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-cyan-500/40"
-        >
-          {loading ? "Generating..." : "Start Interview"}
-        </button>
-      </div>
-
-      {/* Question */}
-
-      {question && (
-        <>
-          <div className="w-full bg-white/10 rounded-full h-3 mb-6">
-            <div
-              className="bg-cyan-400 h-3 rounded-full transition-all duration-500"
-              style={{
-                width: `${(questionNumber / totalQuestions) * 100}%`
-              }}
-            />
-          </div>
-          <div className="mb-4 text-cyan-400 font-bold text-xl">
-            Question {questionNumber} / {totalQuestions}
-          </div>
+          {/* ROLE SELECTION */}
 
           <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-8">
-            <h2 className="text-3xl font-black text-cyan-400 mb-4">
-              Interview Question
+
+            <h2 className="text-3xl font-black text-cyan-300 mb-6">
+              🎯 Select Interview Role
             </h2>
 
-            <p className="text-xl text-gray-200 leading-relaxed">{question}</p>
+            {/* TECH ROLES */}
+
+            <div className="mb-8">
+
+              <h3 className="text-xl font-bold text-cyan-400 mb-4">
+                💻 Tech Careers
+              </h3>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+                {[
+                  "Frontend Developer",
+                  "Backend Developer",
+                  "Full Stack Developer",
+                  "React Developer",
+                  "AI Engineer",
+                  "Data Analyst",
+                  "Software Engineer",
+                  "Cyber Security Analyst",
+                  "Cloud Engineer",
+                  "DevOps Engineer",
+                ].map((item) => (
+
+                  <button
+                    key={item}
+                    onClick={() =>
+                      setRole(item)
+                    }
+                    className={`
+                      p-4 rounded-2xl border text-sm md:text-base
+                      transition-all duration-300
+
+                      ${
+                        role === item
+                          ? "bg-cyan-400 text-black border-cyan-300 scale-105 shadow-lg shadow-cyan-500/30"
+                          : "bg-white/5 border-white/10 hover:border-cyan-400 hover:bg-cyan-500/10"
+                      }
+                    `}
+                  >
+                    {item}
+                  </button>
+
+                ))}
+
+              </div>
+
+            </div>
+
+            {/* CORPORATE ROLES */}
+
+            <div className="mb-8">
+
+              <h3 className="text-xl font-bold text-purple-400 mb-4">
+                🏢 Corporate Careers
+              </h3>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+                {[
+                  "Product Manager",
+                  "Digital Marketing",
+                  "HR Interview",
+                  "Startup Founder",
+                  "MBA Interview",
+                ].map((item) => (
+
+                  <button
+                    key={item}
+                    onClick={() =>
+                      setRole(item)
+                    }
+                    className={`
+                      p-4 rounded-2xl border text-sm md:text-base
+                      transition-all duration-300
+
+                      ${
+                        role === item
+                          ? "bg-purple-400 text-black border-purple-300 scale-105 shadow-lg shadow-purple-500/30"
+                          : "bg-white/5 border-white/10 hover:border-purple-400 hover:bg-purple-500/10"
+                      }
+                    `}
+                  >
+                    {item}
+                  </button>
+
+                ))}
+
+              </div>
+
+            </div>
+
+            {/* GOVERNMENT ROLES */}
+
+            <div>
+
+              <h3 className="text-xl font-bold text-green-400 mb-4">
+                🏛 Government & Public Sector
+              </h3>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+                {[
+                  "SSC Interview",
+                  "UPSC Personality Test",
+                  "Banking Interview",
+                  "Railway Interview",
+                  "Defense Interview",
+                  "Police Interview",
+                  "Teaching Interview",
+                ].map((item) => (
+
+                  <button
+                    key={item}
+                    onClick={() =>
+                      setRole(item)
+                    }
+                    className={`
+                      p-4 rounded-2xl border text-sm md:text-base
+                      transition-all duration-300
+
+                      ${
+                        role === item
+                          ? "bg-green-400 text-black border-green-300 scale-105 shadow-lg shadow-green-500/30"
+                          : "bg-white/5 border-white/10 hover:border-green-400 hover:bg-green-500/10"
+                      }
+                    `}
+                  >
+                    {item}
+                  </button>
+
+                ))}
+
+              </div>
+
+            </div>
+
           </div>
-        </>
-      )}
-      {/* Answer */}
 
-      {question && (
-        <div className="mb-8">
-          <textarea
-            rows={10}
-            value={answer}
-            onChange={(e) => setAnswer(e.target.value)}
-            placeholder="Write your answer here..."
-            className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 outline-none text-lg"
-          />
+          {/* DIFFICULTY */}
 
-          <div className="mt-4 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-4">
-            <h4 className="font-bold text-cyan-300">💡 Answer Tip</h4>
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-8">
 
-            <p className="text-gray-300 mt-2">
-              Use STAR Method: Situation → Task → Action → Result
-            </p>
+            <h2 className="text-2xl font-bold text-cyan-300 mb-4">
+              ⚡ Select Difficulty
+            </h2>
+
+            <div className="flex flex-wrap gap-4">
+
+              {[
+                "Easy",
+                "Medium",
+                "Hard",
+              ].map((item) => (
+
+                <button
+                  key={item}
+                  onClick={() =>
+                    setDifficulty(item)
+                  }
+                  className={`
+                    px-8 py-4 rounded-2xl border font-bold
+                    transition-all duration-300
+
+                    ${
+                      difficulty === item
+                        ? "bg-cyan-400 text-black border-cyan-300 scale-105"
+                        : "bg-white/5 border-white/10 hover:border-cyan-400"
+                    }
+                  `}
+                >
+                  {item}
+                </button>
+
+              ))}
+
+            </div>
+
+            <div className="mt-8">
+
+              <h2 className="text-2xl font-bold text-cyan-300 mb-4">
+                🧠 Interview Type
+              </h2>
+
+              <div className="flex flex-wrap gap-3">
+
+                {getInterviewTypes().map(
+                  (item) => (
+
+                    <button
+                      key={item}
+                      onClick={() =>
+                        setInterviewType(
+                          item
+                        )
+                      }
+                      className={`
+                        px-4 py-3 rounded-2xl border transition-all
+
+                        ${
+                          interviewType ===
+                          item
+                            ? "bg-cyan-400 text-black border-cyan-300"
+                            : "bg-white/5 border-white/10"
+                        }
+                      `}
+                    >
+                      {item}
+                    </button>
+
+                  )
+                )}
+
+              </div>
+
+            </div>
+
+            <div className="mt-8">
+
+              <h2 className="text-2xl font-bold text-cyan-300 mb-4">
+                📋 Number of Questions
+              </h2>
+
+              <div className="flex gap-3 flex-wrap">
+
+                {[3, 5, 10].map(
+                  (count) => (
+
+                    <button
+                      key={count}
+                      onClick={() =>
+                        setTotalQuestions(
+                          count
+                        )
+                      }
+                      className={`
+                        px-5 py-3 rounded-2xl border
+
+                        ${
+                          totalQuestions ===
+                          count
+                            ? "bg-cyan-400 text-black"
+                            : "bg-white/5 border-white/10"
+                        }
+                      `}
+                    >
+                      {count} Questions
+                    </button>
+
+                  )
+                )}
+
+              </div>
+
+            </div>
+
+            {/* PREVIEW */}
+
+            <div className="mt-8 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-3xl p-6">
+
+              <h3 className="text-xl font-bold text-cyan-300 mb-4">
+                🚀 Interview Preview
+              </h3>
+
+              <div className="space-y-3">
+
+                <div className="flex justify-between">
+                  <span className="text-gray-400">
+                    Role
+                  </span>
+
+                  <span className="font-bold">
+                    {role}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-400">
+                    Difficulty
+                  </span>
+
+                  <span className="font-bold">
+                    {difficulty}
+                  </span>
+                </div>
+
+                <div className="flex justify-between">
+                  <span className="text-gray-400">
+                    Interview Type
+                  </span>
+
+                  <span className="font-bold">
+                    {interviewType}
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
+
+            {/* FEATURES */}
+
+            <div className="mt-6 bg-white/5 border border-white/10 rounded-3xl p-6">
+
+              <h3 className="text-xl font-bold text-cyan-300 mb-4">
+                📋 What You'll Get
+              </h3>
+
+              <div className="space-y-3 text-gray-300">
+
+                <div>
+                  ✅ AI-generated interview question
+                </div>
+
+                <div>
+                  ✅ Voice answer practice
+                </div>
+
+                <div>
+                  ✅ Technical evaluation
+                </div>
+
+                <div>
+                  ✅ Communication feedback
+                </div>
+
+                <div>
+                  ✅ Confidence score
+                </div>
+
+                <div>
+                  ✅ Personalized improvements
+                </div>
+
+              </div>
+
+            </div>
+
           </div>
 
-          {/* Buttons */}
-
-          <div className="flex flex-wrap gap-4 mt-6">
-            <button
-              onClick={() => {
-                const SpeechRecognition =
-                  window.SpeechRecognition || window.webkitSpeechRecognition;
-
-                if (!SpeechRecognition) {
-                  alert("Speech Recognition not supported in this browser");
-
-                  return;
-                }
-
-                const recognition = new SpeechRecognition();
-
-                recognition.lang = "en-US";
-
-                recognition.start();
-
-                recognition.onstart = () => {
-                  alert("🎤 Listening...");
-                };
-
-                recognition.onresult = (event) => {
-                  setAnswer(event.results[0][0].transcript);
-                };
-
-                recognition.onerror = (event) => {
-                  console.log(event);
-
-                  alert("Microphone access failed");
-                };
-              }}
-              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-purple-500/40"
-            >
-              🎤 Speak Answer
-            </button>
-
-            <button
-              onClick={analyzeAnswer}
-              className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-cyan-500/40"
-            >
-              {loading ? "Analyzing..." : "Analyze Answer"}
-            </button>
-
-           <button
-  onClick={() => {
-
-    if (questionNumber >= totalQuestions) {
-
-      alert("🎉 Interview Completed!");
-
-      return;
-    }
-
-    setAnswer("");
-    setFeedback("");
-
-    setQuestionNumber(prev => prev + 1);
-
-    startInterview();
-
-  }}
-
-  className="px-8 py-4 rounded-2xl bg-gradient-to-r from-green-400 to-emerald-500 text-black font-bold text-lg hover:scale-105 transition-all"
->
-  ➡️ Next Question
-</button>
-
-<button
-  onClick={() => {
-
-    setQuestion("");
-
-    setAnswer("");
-
-    setFeedback("");
-
-    setQuestionNumber(1);
-
-  }}
-
-  className="px-8 py-4 rounded-2xl bg-red-500 text-white font-bold"
->
-  🛑 End Interview
-</button>
-          </div>
         </div>
-      )}
 
-      {/* Feedback */}
+        {/* START INTERVIEW */}
 
-   {feedback && (
-  <div className="space-y-6 mt-8">
+        <div className="mb-10">
 
-    {/* Overall Score */}
-    <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-3xl p-6 border border-cyan-500/30">
-      <h2 className="text-3xl font-black text-cyan-400">
-        🎯 Overall Interview Score
-      </h2>
+          <button
+            onClick={startInterview}
+            className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-cyan-500/40"
+          >
+            {loading
+              ? "Generating..."
+              : "Start Interview"}
+          </button>
 
-      <p className="text-7xl font-black mt-4">
-        {feedback.overallScore}/10
-      </p>
-    </div>
+        </div>
 
-    {/* Scores */}
-    <div className="grid md:grid-cols-2 gap-5">
+        {/* QUESTION */}
 
-      <div className="bg-white/5 rounded-2xl p-5">
-        💻 Technical : {feedback.technicalScore}/10
+        {question && (
+          <>
+            <div className="w-full bg-white/10 rounded-full h-3 mb-6">
+
+              <div
+                className="bg-cyan-400 h-3 rounded-full transition-all duration-500"
+                style={{
+                  width: `${
+                    (questionNumber /
+                      totalQuestions) *
+                    100
+                  }%`,
+                }}
+              />
+
+            </div>
+
+            <div className="mb-4 text-cyan-400 font-bold text-xl">
+              Question {questionNumber} /{" "}
+              {totalQuestions}
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 mb-8">
+
+              <h2 className="text-3xl font-black text-cyan-400 mb-4">
+                Interview Question
+              </h2>
+
+              <p className="text-xl text-gray-200 leading-relaxed">
+                {question}
+              </p>
+
+            </div>
+
+          </>
+        )}
+
+        {/* ANSWER */}
+
+        {question && (
+
+          <div className="mb-8">
+
+            <textarea
+              rows={10}
+              value={answer}
+              onChange={(e) =>
+                setAnswer(
+                  e.target.value
+                )
+              }
+              placeholder="Write your answer here..."
+              className="w-full bg-white/5 border border-white/10 rounded-3xl p-6 outline-none text-lg"
+            />
+
+            <div className="mt-4 bg-cyan-500/10 border border-cyan-500/20 rounded-2xl p-4">
+
+              <h4 className="font-bold text-cyan-300">
+                💡 Answer Tip
+              </h4>
+
+              <p className="text-gray-300 mt-2">
+                Use STAR Method: Situation → Task →
+                Action → Result
+              </p>
+
+            </div>
+
+            {/* BUTTONS */}
+
+            <div className="flex flex-wrap gap-4 mt-6">
+
+              {/* SPEAK */}
+
+              <button
+                onClick={() => {
+
+                  const SpeechRecognition =
+                    window.SpeechRecognition ||
+                    window.webkitSpeechRecognition;
+
+                  if (!SpeechRecognition) {
+                    alert(
+                      "Speech Recognition not supported in this browser"
+                    );
+
+                    return;
+                  }
+
+                  const recognition =
+                    new SpeechRecognition();
+
+                  recognition.lang =
+                    "en-US";
+
+                  recognition.start();
+
+                  recognition.onstart =
+                    () => {
+                      alert(
+                        "🎤 Listening..."
+                      );
+                    };
+
+                  recognition.onresult =
+                    (event) => {
+
+                      setAnswer(
+                        event.results[0][0]
+                          .transcript
+                      );
+
+                    };
+
+                  recognition.onerror =
+                    (event) => {
+
+                      console.log(event);
+
+                      alert(
+                        "Microphone access failed"
+                      );
+
+                    };
+
+                }}
+                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-purple-500/40"
+              >
+                🎤 Speak Answer
+              </button>
+
+
+              {/* ANALYZE */}
+
+              <button
+                onClick={analyzeAnswer}
+                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-black font-bold text-lg hover:scale-105 transition-all shadow-lg hover:shadow-cyan-500/40"
+              >
+                {loading
+                  ? "Analyzing..."
+                  : "Analyze Answer"}
+              </button>
+
+
+              {/* NEXT QUESTION */}
+
+              <button
+                onClick={() => {
+
+                  if (
+                    questionNumber >=
+                    totalQuestions
+                  ) {
+
+                    alert(
+                      "🎉 Interview Completed!"
+                    );
+
+                    return;
+                  }
+
+                  setAnswer("");
+                  setFeedback(null);
+
+                  setQuestionNumber(
+                    (prev) =>
+                      prev + 1
+                  );
+
+                  startInterview();
+
+                }}
+                className="px-8 py-4 rounded-2xl bg-gradient-to-r from-green-400 to-emerald-500 text-black font-bold text-lg hover:scale-105 transition-all"
+              >
+                ➡️ Next Question
+              </button>
+
+
+              {/* END */}
+
+              <button
+                onClick={() => {
+
+                  setQuestion("");
+
+                  setAnswer("");
+
+                  setFeedback(null);
+
+                  setQuestionNumber(1);
+
+                }}
+                className="px-8 py-4 rounded-2xl bg-red-500 text-white font-bold"
+              >
+                🛑 End Interview
+              </button>
+
+            </div>
+
+          </div>
+
+        )}
+
+        {/* FEEDBACK */}
+
+        {feedback && (
+
+          <div className="space-y-6 mt-8">
+
+            {/* OVERALL SCORE */}
+
+            <div className="bg-gradient-to-r from-cyan-500/20 to-blue-500/20 rounded-3xl p-6 border border-cyan-500/30">
+
+              <h2 className="text-3xl font-black text-cyan-400">
+                🎯 Overall Interview Score
+              </h2>
+
+              <p className="text-7xl font-black mt-4">
+                {feedback.overallScore}/10
+              </p>
+
+            </div>
+
+            {/* SCORES */}
+
+            <div className="grid md:grid-cols-2 gap-5">
+
+              <div className="bg-white/5 rounded-2xl p-5">
+                💻 Technical :{" "}
+                {feedback.technicalScore}/10
+              </div>
+
+              <div className="bg-white/5 rounded-2xl p-5">
+                💬 Communication :{" "}
+                {feedback.communicationScore}/10
+              </div>
+
+              <div className="bg-white/5 rounded-2xl p-5">
+                🔥 Confidence :{" "}
+                {feedback.confidenceScore}/10
+              </div>
+
+              <div className="bg-white/5 rounded-2xl p-5">
+                🧠 Problem Solving :{" "}
+                {feedback.problemSolvingScore}/10
+              </div>
+
+            </div>
+
+            {/* STRENGTHS */}
+
+            <div className="bg-green-500/10 rounded-3xl p-6">
+
+              <h2 className="text-2xl font-bold text-green-400 mb-4">
+                ✅ Strengths
+              </h2>
+
+              <ul className="list-disc pl-6 space-y-2">
+
+                {feedback.strengths.map(
+                  (item, index) => (
+                    <li key={index}>
+                      {item}
+                    </li>
+                  )
+                )}
+
+              </ul>
+
+            </div>
+
+            {/* WEAKNESSES */}
+
+            <div className="bg-red-500/10 rounded-3xl p-6">
+
+              <h2 className="text-2xl font-bold text-red-400 mb-4">
+                ❌ Weaknesses
+              </h2>
+
+              <ul className="list-disc pl-6 space-y-2">
+
+                {feedback.weaknesses.map(
+                  (item, index) => (
+                    <li key={index}>
+                      {item}
+                    </li>
+                  )
+                )}
+
+              </ul>
+
+            </div>
+
+            {/* MISSING POINTS */}
+
+            <div className="bg-yellow-500/10 rounded-3xl p-6">
+
+              <h2 className="text-2xl font-bold text-yellow-400 mb-4">
+                ⚠ Missing Points
+              </h2>
+
+              <ul className="list-disc pl-6 space-y-2">
+
+                {feedback.missingPoints.map(
+                  (item, index) => (
+                    <li key={index}>
+                      {item}
+                    </li>
+                  )
+                )}
+
+              </ul>
+
+            </div>
+
+            {/* IMPROVEMENTS */}
+
+            <div className="bg-blue-500/10 rounded-3xl p-6">
+
+              <h2 className="text-2xl font-bold text-cyan-400 mb-4">
+                🚀 Improvements
+              </h2>
+
+              <ul className="list-disc pl-6 space-y-2">
+
+                {feedback.improvements.map(
+                  (item, index) => (
+                    <li key={index}>
+                      {item}
+                    </li>
+                  )
+                )}
+
+              </ul>
+
+            </div>
+
+            {/* IDEAL ANSWER */}
+
+            <div className="bg-purple-500/10 rounded-3xl p-6">
+
+              <h2 className="text-2xl font-bold text-purple-400 mb-4">
+                ⭐ Ideal Answer
+              </h2>
+
+              <p>
+                {feedback.idealAnswer}
+              </p>
+
+            </div>
+
+            {/* FOLLOW UP */}
+
+            <div className="bg-white/5 rounded-3xl p-6">
+
+              <h2 className="text-2xl font-bold text-cyan-400 mb-4">
+                🎤 Follow Up Question
+              </h2>
+
+              <p>
+                {feedback.followUpQuestion}
+              </p>
+
+            </div>
+
+            {/* INTERVIEWER COMMENT */}
+
+            <div className="bg-white/5 rounded-3xl p-6">
+
+              <h2 className="text-2xl font-bold text-cyan-400 mb-4">
+                👨‍💼 Interviewer's Comment
+              </h2>
+
+              <p>
+                {feedback.interviewerComment}
+              </p>
+
+            </div>
+
+          </div>
+
+        )}
+
       </div>
 
-      <div className="bg-white/5 rounded-2xl p-5">
-        💬 Communication : {feedback.communicationScore}/10
-      </div>
+      {/* ----------------------------------------- */}
+      {/* UPGRADE MODAL */}
+      {/* ----------------------------------------- */}
 
-      <div className="bg-white/5 rounded-2xl p-5">
-        🔥 Confidence : {feedback.confidenceScore}/10
-      </div>
-
-      <div className="bg-white/5 rounded-2xl p-5">
-        🧠 Problem Solving : {feedback.problemSolvingScore}/10
-      </div>
-
-    </div>
-
-    {/* Strengths */}
-
-    <div className="bg-green-500/10 rounded-3xl p-6">
-
-      <h2 className="text-2xl font-bold text-green-400 mb-4">
-        ✅ Strengths
-      </h2>
-
-      <ul className="list-disc pl-6 space-y-2">
-        {feedback.strengths.map((item,index)=>(
-
-          <li key={index}>{item}</li>
-
-        ))}
-      </ul>
-
-    </div>
-
-    {/* Weaknesses */}
-
-    <div className="bg-red-500/10 rounded-3xl p-6">
-
-      <h2 className="text-2xl font-bold text-red-400 mb-4">
-        ❌ Weaknesses
-      </h2>
-
-      <ul className="list-disc pl-6 space-y-2">
-        {feedback.weaknesses.map((item,index)=>(
-
-          <li key={index}>{item}</li>
-
-        ))}
-      </ul>
-
-    </div>
-
-    {/* Missing Points */}
-
-    <div className="bg-yellow-500/10 rounded-3xl p-6">
-
-      <h2 className="text-2xl font-bold text-yellow-400 mb-4">
-        ⚠ Missing Points
-      </h2>
-
-      <ul className="list-disc pl-6 space-y-2">
-        {feedback.missingPoints.map((item,index)=>(
-
-          <li key={index}>{item}</li>
-
-        ))}
-      </ul>
-
-    </div>
-
-    {/* Improvements */}
-
-    <div className="bg-blue-500/10 rounded-3xl p-6">
-
-      <h2 className="text-2xl font-bold text-cyan-400 mb-4">
-        🚀 Improvements
-      </h2>
-
-      <ul className="list-disc pl-6 space-y-2">
-        {feedback.improvements.map((item,index)=>(
-
-          <li key={index}>{item}</li>
-
-        ))}
-      </ul>
-
-    </div>
-
-    {/* Ideal Answer */}
-
-    <div className="bg-purple-500/10 rounded-3xl p-6">
-
-      <h2 className="text-2xl font-bold text-purple-400 mb-4">
-        ⭐ Ideal Answer
-      </h2>
-
-      <p>{feedback.idealAnswer}</p>
-
-    </div>
-
-    {/* Follow Up */}
-
-    <div className="bg-white/5 rounded-3xl p-6">
-
-      <h2 className="text-2xl font-bold text-cyan-400 mb-4">
-        🎤 Follow Up Question
-      </h2>
-
-      <p>{feedback.followUpQuestion}</p>
-
-    </div>
-
-    {/* Interviewer Comment */}
-
-    <div className="bg-white/5 rounded-3xl p-6">
-
-      <h2 className="text-2xl font-bold text-cyan-400 mb-4">
-        👨‍💼 Interviewer's Comment
-      </h2>
-
-      <p>{feedback.interviewerComment}</p>
-
-    </div>
-
-  </div>
-)}
-    </div>
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() =>
+          setShowUpgradeModal(false)
+        }
+        feature="Mock Interviews"
+        currentUsage={interviewUsage}
+        limit={
+          userPlan === "free"
+            ? 5
+            : undefined
+        }
+      />
+    </>
   );
 }
